@@ -3,16 +3,25 @@ from tkinter import Frame, Label
 
 
 class Window:
-	def __init__(self, window_size: tuple, title: str):
+	def __init__(self, window_size: tuple, board_side:int, title: str):
 		self.window = tk.Tk()
-		self.window.resizable(False, False)
+		# self.window.resizable(False, False)
 		self.window.title(title)
-
+		self.positions = []
 		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg="green")
 		board_size = 2/3*window_size[0]
+		player_height = 1/6*window_size[0]
 		self.board_frame = Frame(self.main_frame, width=board_size, height=board_size, bg="blue")
+		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
+		self.remote_player_frame.pack(side='top')
+		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
+		self.local_player_frame.pack(side='bottom')
+		# self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=)
+		for frame in [self.board_frame, self.main_frame]:
+			frame.pack()
+			frame.pack_propagate(0)
 		
-		
+		self.__draw_board(board_size/board_side, board_side)
 		
 		# self.frame_baixo = Frame(self.main_frame,width=450, height=200, bg='orange')
 		# self.label1 = Label(self.frame_meio, text='To no frame de cima!')
@@ -21,10 +30,8 @@ class Window:
 		# self.label1.pack(side='top')
 		# self.label2.pack(side='top')
 		
-		for frame in [self.board_frame, self.main_frame]:
-			frame.pack()
-			frame.pack_propagate(0)
-		self.board_frame.bind("<Button-1>", self.func)
+		
+		# self.board_frame.bind("<Button-1>", self.func)
 		# self.frame_meio.pack()
 
 		self.canvas = []
@@ -42,25 +49,32 @@ class Window:
 	def render(self):
 		self.window.mainloop()
 
-	def draw_board(self, position_size: int, board_side: int):
+	def __draw_board(self, position_size: int, board_side: int):
 		for w in range(board_side):
 			for h in range(board_side):
 				x0 = w * position_size
 				y0 = h * position_size
-				x1 = x0 + position_size
-				y1 = y0 + position_size
-				new_canvas = tk.Canvas(self.frame_meio, width=position_size, height=position_size)
-				new_canvas.create_rectangle(0,0,position_size, position_size, fill="blue", tags='border')
-				new_canvas.place(x=x0, y=y0)
-				new_canvas.bind("<Button-1>", self.func)
-				self.canvas.append(new_canvas)
-				new_canvas.pack()
+				print(x0, y0)
+				new_position = Frame(self.board_frame, width=position_size, height=position_size, bg='red', highlightthickness=1, name=f'({w,h})')
+				new_position.bind("<Button-1>", self.func)
+				new_position.bind("<Enter>", self.func2)
+				new_position.bind("<Leave>", self.func3)
+				new_position.place(x=x0, y=y0)
+				new_position.pack_propagate(0)
+				self.positions.append(new_position)
 				# self.canvas_board.create_rectangle(x0, y0, x1, y1, fill="blue", tags = 'border')
 		
 	
 	def func(self, event):
-		print("Oi", event.x, event.y)
+		print("Oi", event.x, event.y, event)
 
+	def func2(self, event):
+		print("Oi", event.x, event.y, event.widget)
+		event.widget.configure(bg='white')
+
+	def func3(self, event):
+		print("Oi", event.x, event.y, event.widget)
+		event.widget.configure(bg='red')
 		
 
 		# for i in range(15):

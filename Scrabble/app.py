@@ -1,7 +1,6 @@
 from src.classes.window import Window
 
-janela = Window((600, 600), "Scrabble")
-# janela.draw_board(30,15)
+janela = Window((1000, 1000), 15, "Scrabble")
 janela.render()
 # import tkinter as tk
 # from PIL import Image, ImageTk
