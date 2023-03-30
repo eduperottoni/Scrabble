@@ -1,13 +1,30 @@
 import tkinter as tk
-from tkinter import Frame, Label
-
+from tkinter import Frame, Label, messagebox, Button, Menu
 
 class Window:
 	def __init__(self, window_size: tuple, board_side:int, title: str):
 		self.window = tk.Tk()
-		# self.window.resizable(False, False)
 		self.window.title(title)
+		self.menu_bar = Menu(self.window)
+		self.window.config(menu=self.menu_bar)
+		self.file_menu = Menu(self.menu_bar)
+		self.file_menu.add_command(
+			label='Exit game',
+			command=self.window.destroy,
+		)
+		self.file_menu.add_command(
+			label='Restart game',
+			command=lambda event: self.general_click(event, 'Reinício da partida', 'Certeza que quer reiniciar a partida?', 'Dados serão apagados e partida reiniciada', 'Voltando ao jogo'),
+		)
+		self.menu_bar.add_cascade(
+			label="File",
+			menu=self.file_menu,
+			underline=0
+		)
+
 		self.positions = []
+		self.pack_positions = []
+		self.buttons = []
 		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg="green")
 		board_size = 2/3*window_size[0]
 		player_height = 1/6*window_size[0]
@@ -16,34 +33,22 @@ class Window:
 		self.remote_player_frame.pack(side='top')
 		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
 		self.local_player_frame.pack(side='bottom')
-		# self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=)
 		for frame in [self.board_frame, self.main_frame]:
 			frame.pack()
 			frame.pack_propagate(0)
 		
 		self.__draw_board(board_size/board_side, board_side)
+		self.__draw_packs(board_size/board_side*7, 1/3*player_height,board_size/board_side)
+		button = self.__draw_button('Enviar palavra', 40, 5, (20,15), self.local_player_frame)
+		button.bind("<Button-1>", lambda event: self.general_click(event, 'Envio de palavra', 'Quer realmente submeter a palavra?', 'Palavra será analisada', 'Voltando ao jogo'))
+		button = self.__draw_button('Retornar cards', 40, 5, (20,50), self.local_player_frame)
+		button.bind("<Button-1>", lambda event: self.general_click(event, 'Retorno de cards ao pack', 'Os últimos cards adicionados ao tabuleiro serão retornados ao pack. Quer mesmo?', 'Devolvendo packs', 'Voltando ao jogo'))
+		button = self.__draw_button('Passar a vez', 40, 5, (20,85), self.local_player_frame)
+		button.bind("<Button-1>", lambda event: self.general_click(event, 'Passar a vez', 'Certeza que quer passar a vez?', 'Trocando de turno', 'Voltando ao jogo'))
+		button = self.__draw_button('Trocar cards', 40, 5, (20, 120), self.local_player_frame)
+		button.bind("<Button-1>", lambda event: self.general_click(event, 'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?', 'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
 		
-		# self.frame_baixo = Frame(self.main_frame,width=450, height=200, bg='orange')
-		# self.label1 = Label(self.frame_meio, text='To no frame de cima!')
-		# self.label2 = Label(self.frame_baixo, text='To no frame de baixo!')
-
-		# self.label1.pack(side='top')
-		# self.label2.pack(side='top')
-		
-		
-		# self.board_frame.bind("<Button-1>", self.func)
-		# self.frame_meio.pack()
-
 		self.canvas = []
-
-
-
-		# self.canvas = tk.Canvas(self.main, width=self.canvas_size[0], height=canvas_size[1])
-		
-		# self.canvas_window.pack()
-		# self.canvas_board = tk.Canvas(self.canvas_window, width=300, height=300)
-		# self.canvas_board.place(x=50,y=50)
-		# self.canvas_board.pack();
 
 	#Rendering game window
 	def render(self):
@@ -56,85 +61,55 @@ class Window:
 				y0 = h * position_size
 				print(x0, y0)
 				new_position = Frame(self.board_frame, width=position_size, height=position_size, bg='red', highlightthickness=1, name=f'({w,h})')
-				new_position.bind("<Button-1>", self.func)
-				new_position.bind("<Enter>", self.func2)
-				new_position.bind("<Leave>", self.func3)
+				new_position.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
+				# new_position.bind("<Enter>", self.mouse_over)
+				# new_position.bind("<Leave>", self.mouse_out)
 				new_position.place(x=x0, y=y0)
 				new_position.pack_propagate(0)
 				self.positions.append(new_position)
 				# self.canvas_board.create_rectangle(x0, y0, x1, y1, fill="blue", tags = 'border')
 		
 	
-	def func(self, event):
-		print("Oi", event.x, event.y, event)
+	def click(self, event, main_message: str, message: str, color: str):
+		messagebox.showinfo(f'{main_message}', \
+							f'{message}: {str(event.widget).split(".")[-1]}')
+		event.widget.configure(bg=f'{color}')
 
-	def func2(self, event):
-		print("Oi", event.x, event.y, event.widget)
-		event.widget.configure(bg='white')
+	def general_click(self, event, main_message: str, ask_message: str, affirm_message: str, negat_message: str):
+		answer = messagebox.askquestion(f'{main_message}', \
+				  						f'{ask_message}', icon='warning')
+		if answer == 'yes':
+			messagebox.showinfo('', \
+		       					affirm_message)
+		else:
+			messagebox.showinfo('', \
+		       					negat_message)
+	
+	# def mouse_over(self, event):
+	# 	event.widget.configure(bg='white')
 
-	def func3(self, event):
-		print("Oi", event.x, event.y, event.widget)
-		event.widget.configure(bg='red')
-		
+	# def mouse_out(self, event):
+	# 	event.widget.configure(bg='red')
 
-		# for i in range(15):
-		# 	for j in range(15):
-		# 		self.canvas.create_rectangle((25*i+12, 25*j+12, 25*i+37, 25*j+37), width=4.0,
-		# 										fill="brown", tags="border")
-		# for i in [1, 2, 3, 4, 10, 11, 12, 13]:
-		# 	self.canvas.create_text((25*i + 25, 25*i + 25), text='2W ', tags="board")
-		# 	self.canvas.create_text((25*i + 25, 25*(14-i) + 25), text='2W ', tags="board")
-		# 	self.canvas.create_text((200,200), text='2W ', tags="board")
-		# 	self.canvas.create_text((25, 25), text='3W ', tags="board")
-		# 	self.canvas.create_text((25, 200), text='3W ', tags="board")
-		# 	self.canvas.create_text((200, 25), text='3W ', tags="board")
-		# 	self.canvas.create_text((25, 375), text='3W ', tags="board")
-		# 	self.canvas.create_text((375, 25), text='3W ', tags="board")
-		# 	self.canvas.create_text((200,375), text='3W ', tags="board")
-		# 	self.canvas.create_text((375,200), text='3W ', tags="board")
-		# 	self.canvas.create_text((375, 375), text='3W ', tags="board")
+	def __draw_packs(self, width: float, height: float, card_size: float):
+		self.frame_remote_pack = Frame(self.remote_player_frame, width=width, height=height, bg="blue")
+		self.frame_local_pack = Frame(self.local_player_frame, width=width, height=height, bg="blue")
+		self.label_remote_player = Label(self.remote_player_frame, text="Remote player name", width=40)
+		self.label_local_player = Label(self.local_player_frame, text="Local player name", width=40)
+		self.label_local_player.place(x=340, y=40)
+		self.label_remote_player.place(x=340, y=120)
+		self.frame_remote_pack.place(x=340,y=30)
+		self.frame_local_pack.place(x =340, y=90)
+		for i in range(7):
+			new_remote_pack_pos = Frame(self.frame_remote_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'remote({0,i})')
+			new_local_pack_pos = Frame(self.frame_local_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'local({0,i})')
+			new_local_pack_pos.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou um card do pack', 'Posição do card selecionado no pack', 'red'))
+			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
+				pack_position.place(x=i*card_size, y=5)
+				self.pack_positions.append(pack_position)
 
-		# 	self.canvas.create_text((100, 25), text='2L ', tags="board")
-		# 	self.canvas.create_text((175, 75), text='2L ', tags="board")
-		# 	self.canvas.create_text((25, 100), text='2L ', tags="board")
-		# 	self.canvas.create_text((200,100), text='2L ', tags="board")
-		# 	self.canvas.create_text((75,175), text='2L ', tags="board")
-		# 	self.canvas.create_text((100,200), text='2L ', tags="board")
-		# 	self.canvas.create_text((175, 175), text='2L ', tags="board")
-
-		# 	self.canvas.create_text((300,25), text='2L ', tags="board")
-		# 	self.canvas.create_text((225,75), text='2L ', tags="board")
-		# 	self.canvas.create_text((375, 100), text='2L ', tags="board")
-		# 	self.canvas.create_text((225, 175), text='2L ', tags="board")
-		# 	self.canvas.create_text((325, 175), text='2L ', tags="board")
-		# 	self.canvas.create_text((300, 200), text='2L ', tags="board")
-
-		# 	self.canvas.create_text((100, 375), text='2L ', tags="board")
-		# 	self.canvas.create_text((175, 325), text='2L ', tags="board")
-		# 	self.canvas.create_text((25, 300), text='2L ', tags="board")
-		# 	self.canvas.create_text((75, 225), text='2L ', tags="board")
-		# 	self.canvas.create_text((175, 225), text='2L ', tags="board")
-		# 	self.canvas.create_text((200, 300), text='2L ', tags="board")
-
-		# 	self.canvas.create_text((300, 375), text='2L ', tags="board")
-		# 	self.canvas.create_text((225, 325), text='2L ', tags="board")
-		# 	self.canvas.create_text((375, 300), text='2L ', tags="board")
-		# 	self.canvas.create_text((325, 225), text='2L ', tags="board")
-		# 	self.canvas.create_text((225, 225), text='2L ', tags="board")
-
-		# 	self.canvas.create_text((150,50), text='3L ', tags="board")
-		# 	self.canvas.create_text((50,150), text='3L ', tags="board")
-		# 	self.canvas.create_text((150,150), text='3L ', tags="board")
-
-		# 	self.canvas.create_text((250,50), text='3L ', tags="board")
-		# 	self.canvas.create_text((250,150), text='3L ', tags="board")
-		# 	self.canvas.create_text((350,150), text='3L ', tags="board")
-
-		# 	self.canvas.create_text((250, 350), text='3L ', tags="board")
-		# 	self.canvas.create_text((350,250), text='3L ', tags="board")
-		# 	self.canvas.create_text((250,250), text='3L ', tags="board")
-
-		# 	self.canvas.create_text((50,250), text='3L ', tags="board")
-		# 	self.canvas.create_text((150,250), text='3L ', tags="board")
-		# 	self.canvas.create_text((150,350), text='3L ', tags="board")
-
+	def __draw_button(self, btn_text: str, width: float, height: float, position: tuple, main_frame: Frame) -> Button: 
+		new_button = Button(main_frame, text=btn_text)
+		new_button.place(x=position[0], y=position[1])
+		self.buttons.append(new_button)
+		return new_button
