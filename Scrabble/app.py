@@ -1,7 +1,7 @@
-from src.classes.window import Window
+from src.classes.player_interface import PlayerInterface
 
-janela = Window((1000, 1000), 15, "Scrabble")
-janela.render()
+interface = PlayerInterface((960, 960), 15, "Scrabble")
+interface.render()
 
 
 # import tkinter as tk

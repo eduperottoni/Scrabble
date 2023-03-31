@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Frame, Label, messagebox, Button, Menu
 
-class Window:
+class PlayerInterface:
 	def __init__(self, window_size: tuple, board_side:int, title: str):
 		self.window = tk.Tk()
 		self.window.title(title)
@@ -14,7 +14,7 @@ class Window:
 		)
 		self.file_menu.add_command(
 			label='Restart game',
-			command=lambda event: self.general_click(event, 'Reinício da partida', 'Certeza que quer reiniciar a partida?', 'Dados serão apagados e partida reiniciada', 'Voltando ao jogo'),
+			command= self.window.destroy,
 		)
 		self.menu_bar.add_cascade(
 			label="File",
@@ -54,22 +54,20 @@ class Window:
 	def render(self):
 		self.window.mainloop()
 
+	# drawing positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
-		for w in range(board_side):
-			for h in range(board_side):
-				x0 = w * position_size
-				y0 = h * position_size
-				print(x0, y0)
-				new_position = Frame(self.board_frame, width=position_size, height=position_size, bg='red', highlightthickness=1, name=f'({w,h})')
+		for line in range(board_side):
+			new_list = []
+			for column in range(board_side):
+				x0 = column * position_size
+				y0 = line * position_size
+				new_position = Frame(self.board_frame, width=position_size, height=position_size, bg='red', highlightthickness=1, name=f'({line, column})')
 				new_position.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-				# new_position.bind("<Enter>", self.mouse_over)
-				# new_position.bind("<Leave>", self.mouse_out)
 				new_position.place(x=x0, y=y0)
 				new_position.pack_propagate(0)
-				self.positions.append(new_position)
-				# self.canvas_board.create_rectangle(x0, y0, x1, y1, fill="blue", tags = 'border')
-		
-	
+				new_list.append(new_position)
+			self.positions.append(new_list)
+
 	def click(self, event, main_message: str, message: str, color: str):
 		messagebox.showinfo(f'{main_message}', \
 							f'{message}: {str(event.widget).split(".")[-1]}')
@@ -84,12 +82,6 @@ class Window:
 		else:
 			messagebox.showinfo('', \
 		       					negat_message)
-	
-	# def mouse_over(self, event):
-	# 	event.widget.configure(bg='white')
-
-	# def mouse_out(self, event):
-	# 	event.widget.configure(bg='red')
 
 	def __draw_packs(self, width: float, height: float, card_size: float):
 		self.frame_remote_pack = Frame(self.remote_player_frame, width=width, height=height, bg="blue")
