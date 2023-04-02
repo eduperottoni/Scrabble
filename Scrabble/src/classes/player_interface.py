@@ -21,11 +21,9 @@ class PlayerInterface:
 			menu=self.file_menu,
 			underline=0
 		)
-
 		self.positions = []
 		self.pack_positions = []
 		self.buttons = []
-		# @TODO --> Inserir no Diagrama
 		self.cards = []
 		self.scores = []
 		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg="green")
@@ -35,15 +33,12 @@ class PlayerInterface:
 		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
 		self.remote_player_frame.pack(side='top')
 		self.scores.append(self.__draw_score(self.remote_player_frame, (200,100), (720, 30)))
-		
 		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
 		self.local_player_frame.pack(side='bottom')
 		self.scores.append(self.__draw_score(self.local_player_frame, (200,100), (720, 30)))
-		
 		for frame in [self.board_frame, self.main_frame]:
 			frame.pack()
 			frame.pack_propagate(0)
-		
 		self.__draw_board(board_size/board_side, board_side)
 		self.__draw_packs((board_size/board_side*7, 1/3*player_height), board_size/board_side)
 		button = self.__draw_button('Enviar palavra', 40, 5, (20,15), self.local_player_frame)
@@ -72,6 +67,7 @@ class PlayerInterface:
 				new_position = Frame(self.board_frame, width=position_size, height=position_size, bg='gray', highlightthickness=1, name=f'({line, column})')
 				new_canvas = Canvas(new_position, width=position_size-2, height=position_size-2, name=f'({line, column})')
 				color = 'gray'
+				#drawing special positions
 				if (line in [0, 7, 14] and column in [0, 7, 14] and (line, column) != (7,7)):
 					new_canvas.place(x=-1, y=-1)
 					color='orange'
@@ -135,7 +131,6 @@ class PlayerInterface:
 			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
 				pack_position.place(x=i*card_size, y=5)
 				self.pack_positions.append(pack_position)
-				
 			card = self.__draw_card(new_local_pack_pos, (card_size, card_size), 'A', 8)
 			self.cards.append(card)
 
@@ -155,7 +150,7 @@ class PlayerInterface:
 		card.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou um card do pack', 'Posição do card selecionado no pack', 'red'))
 		return card
 	
-	#Drawing scores
+	#Drawing scores (using Canvas widget)
 	def __draw_score(self, main_frame: Frame, size: tuple, position: tuple) -> Canvas:
 		new_score = Canvas(main_frame, width=size[0], height=size[1], bg='blue')
 		new_score.create_text(100, 16, text="PONTUAÇÃO", font=('Arial', 16))
