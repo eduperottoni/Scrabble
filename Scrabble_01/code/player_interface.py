@@ -1,21 +1,13 @@
-from dog.dog_interface import DogPlayerInterface
-from dog.dog_actor import DogActor
-from dog.start_status import StartStatus
 import tkinter as tk
-from tkinter import Frame, Label, messagebox, Button, Menu, Canvas, simpledialog
+from tkinter import Frame, Label, messagebox, Button, Menu, Canvas
 
-class PlayerInterface(DogPlayerInterface):
+class PlayerInterface:
 	def __init__(self, window_size: tuple, board_side:int, title: str):
-		self.dog_server_interface = DogActor()
 		self.window = tk.Tk()
 		self.window.title(title)
 		self.menu_bar = Menu(self.window)
 		self.window.config(menu=self.menu_bar)
 		self.file_menu = Menu(self.menu_bar)
-		self.file_menu.add_command(
-			label='Start game',
-			command=self.start_game
-		)
 		self.file_menu.add_command(
 			label='Exit game',
 			command=self.window.destroy,
@@ -25,7 +17,7 @@ class PlayerInterface(DogPlayerInterface):
 			command= self.window.destroy,
 		)
 		self.menu_bar.add_cascade(
-			label="Game options",
+			label="File",
 			menu=self.file_menu,
 			underline=0
 		)
@@ -60,14 +52,7 @@ class PlayerInterface(DogPlayerInterface):
 
 	#Rendering game window
 	def render(self):
-		self.__initialize_dog()
 		self.window.mainloop()
-
-	def __initialize_dog(self):
-		player_name = simpledialog.askstring(title='Identificação de jogador', prompt='Digite o seu nome:')
-		message = self.dog_server_interface.initialize(player_name, self)
-		messagebox.showinfo(message=message)
-
 
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
@@ -86,23 +71,23 @@ class PlayerInterface(DogPlayerInterface):
 				if (line in [0, 7, 14] and column in [0, 7, 14] and (line, column) != (7,7)):
 					new_canvas.place(x=-1, y=-1)
 					color='orange'
-					new_canvas.create_text(20,20, text='TW', font=('Arial', 16))
+					new_canvas.create_text(20,20, text='TW', font=('ARIAL', 16))
 				elif ((line, column) in dw):
 					new_canvas.place(x=-1, y=-1)
 					color='yellow'
-					new_canvas.create_text(20,20, text='DW', font=('Arial', 16))
+					new_canvas.create_text(20,20, text='DW', font=('ARIAL', 16))
 				elif ((line, column) in dl):
 					new_canvas.place(x=-1, y=-1)
 					color='blue'
-					new_canvas.create_text(20,20, text='DL', font=('Arial', 16))
+					new_canvas.create_text(20,20, text='DL', font=('ARIAL', 16))
 				elif ((line, column) in tl):
 					new_canvas.place(x=-1, y=-1)
 					color='purple'
-					new_canvas.create_text(20,20, text='TL', font=('arial', 16))
+					new_canvas.create_text(20,20, text='TL', font=('ARIAL', 16))
 				elif ((line, column) == (7,7)):
 					new_canvas.place(x=-1, y=-1)
 					color='black'
-					new_canvas.create_text(20,20, text='#', font=('Arial', 16), fill='white')
+					new_canvas.create_text(20,20, text='#', font=('ARIAL', 16), fill='white')
 	 
 				new_canvas.configure(bg=f'{color}')
 				new_canvas.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
@@ -128,13 +113,6 @@ class PlayerInterface(DogPlayerInterface):
 		else:
 			messagebox.showinfo('', \
 		       					negat_message)
-
-	def __askquestion(self, title: str, ask_message: str) -> None:
-		answer = messagebox.askquestion(title, ask_message, icon='question')
-		return True if answer == 'yes' else False
-	
-	def __show_message(self, title: str, message: str) -> None:
-		messagebox.showinfo(title=title, message=message)
 
 	#Drawing packs
 	def __draw_packs(self, pack_size: tuple, card_size: float):
@@ -178,15 +156,3 @@ class PlayerInterface(DogPlayerInterface):
 		new_score.create_text(100, 16, text="PONTUAÇÃO", font=('Arial', 16))
 		new_score.place(x=position[0], y=position[1])
 		return new_score
-	
-	#Starting game (com o DOG)
-	def start_game(self) -> None:
-		self.__show_message('Início do jogo', 'O jogo será iniciado')
-		start_status = self.dog_server_interface.start_match(2)
-		message = start_status.get_message()
-		self.__show_message(title='Mensagem do DOG', message=message)
-
-	#Receiving game's start from DOG
-	def receive_start(self, start_status: StartStatus) -> None:
-		message = start_status.get_message()
-		self.__show_message(title='Mensagem do DOG', message=message)
