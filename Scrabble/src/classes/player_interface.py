@@ -57,9 +57,10 @@ class PlayerInterface(DogPlayerInterface):
 		button.bind("<Button-1>", lambda event: self.general_click(event, 'Passar a vez', 'Certeza que quer passar a vez?', 'Trocando de turno', 'Voltando ao jogo'))
 		button = self.__draw_button('Trocar cards', 40, 5, (20, 120), self.local_player_frame)
 		button.bind("<Button-1>", lambda event: self.general_click(event, 'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?', 'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
+		self.__render()
 
 	#Rendering game window
-	def render(self):
+	def __render(self):
 		self.__initialize_dog()
 		self.window.mainloop()
 
