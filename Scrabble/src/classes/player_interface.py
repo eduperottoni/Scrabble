@@ -6,7 +6,6 @@ from tkinter import Frame, Label, messagebox, Button, Menu, Canvas, simpledialog
 
 class PlayerInterface(DogPlayerInterface):
 	def __init__(self, window_size: tuple, board_side:int, title: str):
-		self.dog_server_interface = DogActor()
 		self.window = tk.Tk()
 		self.window.title(title)
 		self.menu_bar = Menu(self.window)
@@ -66,6 +65,7 @@ class PlayerInterface(DogPlayerInterface):
 
 	def __initialize_dog(self):
 		player_name = simpledialog.askstring(title='Identificação de jogador', prompt='Digite o seu nome:')
+		self.dog_server_interface = DogActor()
 		message = self.dog_server_interface.initialize(player_name, self)
 		messagebox.showinfo(message=message)
 
