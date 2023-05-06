@@ -69,81 +69,74 @@ class PlayerInterface(DogPlayerInterface):
 		self.dog_server_interface = DogActor()
 		message = self.dog_server_interface.initialize(player_name, self)
 		messagebox.showinfo(message=message)
-
-
-	def __draw_position():
-		...
 	
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
+		RELATIVE_PATH = 'src/images/positions/scrabble'
 		POSITIONS_IMG_DICT = {
-			'DW' : 'src/images/positions/scrabble_DW.png',
-			'DL' : 'src/images/positions/scrabble_DL.png',
-			'TW' : 'src/images/positions/scrabble_TW.png',
-			'TL' : 'src/images/positions/scrabble_DW.png',
-			'NORMAL' : 'src/images/positions/scrabble_NORMAL.png',
+			'DW' : f'{RELATIVE_PATH}_DW.png',
+			'DL' : f'{RELATIVE_PATH}_DL.png',
+			'TW' : f'{RELATIVE_PATH}_TW.png',
+			'TL' : f'{RELATIVE_PATH}_TL.png',
+			'NORMAL' : f'{RELATIVE_PATH}_NORMAL.png',
+			'*' : f'{RELATIVE_PATH}_*.png'
 		}
 		
 		tw = [(0,0), (0,7), (0,14), (7,0), (7,14), (14,0), (14,7), (14,14)]
 		dw = [(1,1), (2,2), (3,3), (4,4), (13,13), (12,12), (11,11), (10,10), (1,13), (2,12), (3,11), (4,10), (13,1), (12,2), (11,3), (10,4)]
-		dl = [(0,3), (0,11), (2,6), (2,8), (3,0), (3,7), (3,14), (6,2), (6,6), (6,8), (6,12), (7,3), (7,11), (8,2), (8,6), (8,8), (8,12), (11,0), (11,7), (11,14), (12,6), (12,8), (13,3), (13,11)]
+		dl = [(0,3), (0,11), (2,6), (2,8), (3,0), (3,7), (3,14), (6,2), (6,6), (6,8), (6,12), (7,3), (7,11), (8,2), (8,6), (8,8), (8,12), (11,0), (11,7), (11,14), (12,6), (12,8), (14,3), (14,11)]
 		tl = [(1,5), (1,9), (5,1), (5,5), (5,9), (5,13), (9,1), (9,5), (9,9), (9,13), (13,5), (13,9)]
 		
 		for line in range(board_side):
-			new_list = []
+			positions_line = []
 			for column in range(board_side):
+				# Defining positions
 				x0 = column * position_size
 				y0 = line * position_size
-				frame_position = Frame(self.board_frame, width=position_size, height=position_size, bg='gray', highlightthickness=0, name=f'({line, column})')
-				# new_canvas = Canvas(new_position, width=position_size-2, height=position_size-2, name=f'({line, column})')
-				# color = 'gray'
-				#drawing special positions
+				frame_position = Frame(self.board_frame, width=position_size, height=position_size, bg='gray', highlightthickness=1)
+				
+				# We create the Label's image depending on the type o the position
+				dict_key = 'NORMAL'
 				if ((line, column) in tw):
-					pil_img = Image.open(POSITIONS_IMG_DICT['TW'])
-					resized_img = pil_img.resize((int(position_size-5), int(position_size-5)), Image.ANTIALIAS)
-					tk_img = ImageTk.PhotoImage(resized_img)
-					label_img = Label(frame_position, bg='orange', image=tk_img, borderwidth=2.5)
-					label_img.image = tk_img
-					label_img.pack()
-					label_img.bind('<Button-1>', lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-					# new_canvas.place(x=-1, y=-1)
-					color='orange'
-					# new_canvas.create_text(20,20, text='TW', font=('Arial', 16))
+					dict_key = 'TW'
 				elif ((line, column) in dw):
-					# new_canvas.place(x=-1, y=-1)
-					color='yellow'
-					# new_canvas.create_text(20,20, text='DW', font=('Arial', 16))
+					dict_key = 'DW'
 				elif ((line, column) in dl):
-					# new_canvas.place(x=-1, y=-1)
-					color='blue'
-					# new_canvas.create_text(20,20, text='DL', font=('Arial', 16))
+					dict_key = 'DL'
 				elif ((line, column) in tl):
-					# new_canvas.place(x=-1, y=-1)
-					color='purple'
-					# new_canvas.create_text(20,20, text='TL', font=('arial', 16))
+					dict_key = 'TL'
 				elif ((line, column) == (7,7)):
-					# new_canvas.place(x=-1, y=-1)
-					# color='black'/
-					# new_canvas.create_text(20,20, text='#', font=('Arial', 16), fill='white')
-	 
-		# 		new_canvas.configure(bg=f'{color}')
-		# 		new_canvas.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-		# 		new_position.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-		# 		new_position.pack_propagate(0)
-		# 		new_list.append(new_position)
-		# 	self.positions.append(new_list)
-		
-					pil_img = Image.open(POSITIONS_IMG_DICT['DW'])
-					resized_img = pil_img.resize((int(position_size), int(position_size)), Image.ANTIALIAS)
-					tk_img = ImageTk.PhotoImage(resized_img)
-					label_image = Label(self.board_frame, image=tk_img, highlightthickness=2)
-					label_image.image = tk_img
-					label_image.pack()
-					label_image.bind('<Button-1>', lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-					# new_canvas.place(x=-1, y=-1)
-					color='orange'
-
+					dict_key = '*'
+				
+				# Creating Label's image
+				pil_img = Image.open(POSITIONS_IMG_DICT[dict_key])
+				resized_img = pil_img.resize((int(position_size)-6, int(position_size)-6), Image.ANTIALIAS)
+				tk_img = ImageTk.PhotoImage(resized_img)
+				label_img = Label(
+					frame_position, 
+					bg='white', 
+					image=tk_img, 
+					borderwidth=3,
+					name=f'board({line, column})'
+				)
+				label_img.image = tk_img
+				label_img.pack()
+				label_img.bind(
+					'<Button-1>', 
+					lambda event: self.click(
+						event, 
+						'Você selecionou uma posição do tabuleiro', 
+						'Posição selecionada', 
+						'green')
+				)
 				frame_position.place(x=x0, y=y0)
+
+				# Iserting label on line
+				positions_line.append(label_img)
+
+			# Iserting line on positions matrix
+			self.positions.append(positions_line)
+	
 	#click event in positions of the board
 	def click(self, event, main_message: str, message: str, color: str):
 		messagebox.showinfo(f'{main_message}', \
@@ -217,6 +210,7 @@ class PlayerInterface(DogPlayerInterface):
 		start_status = self.dog_server_interface.start_match(2)
 		message = start_status.get_message()
 		self.__show_message(title='Mensagem do DOG', message=message)
+		
 
 	#Receiving game's start from DOG
 	def receive_start(self, start_status: StartStatus) -> None:

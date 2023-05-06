@@ -25,7 +25,7 @@ POSITIONS_RGB = {
 }
 
 # Define a function to draw a position for a given description
-def draw_card(pos_desc: str) -> None:
+def draw_position(pos_desc: str) -> None:
     # Create a new image for the position
     position_color = POSITIONS_RGB[pos_desc]
 
@@ -41,7 +41,7 @@ def draw_card(pos_desc: str) -> None:
         draw.text((x, y), pos_desc, fill=BORDER_COLOR, font=LETTER_FONT)
     
     # Draw a border around the position
-    # draw.rectangle((0, 0, POSITION_WIDTH, POSITION_HEIGHT), outline=position_color, width=BORDER_WIDTH)
+    # draw.rectangle((0, 0, POSITION_WIDTH, POSITION_HEIGHT), outline=BORDER_COLOR, width=BORDER_WIDTH)
     
     filename = f'scrabble_{pos_desc}.png'
     position.save(f'{PATH}/{filename}')
@@ -50,4 +50,4 @@ def draw_card(pos_desc: str) -> None:
     # return position
 
 for description in POSITIONS_RGB.keys():
-    card = draw_card(description)
+    card = draw_position(description)
