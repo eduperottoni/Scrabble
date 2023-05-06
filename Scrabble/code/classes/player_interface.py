@@ -71,59 +71,79 @@ class PlayerInterface(DogPlayerInterface):
 		messagebox.showinfo(message=message)
 
 
+	def __draw_position():
+		...
+	
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
+		POSITIONS_IMG_DICT = {
+			'DW' : 'src/images/positions/scrabble_DW.png',
+			'DL' : 'src/images/positions/scrabble_DL.png',
+			'TW' : 'src/images/positions/scrabble_TW.png',
+			'TL' : 'src/images/positions/scrabble_DW.png',
+			'NORMAL' : 'src/images/positions/scrabble_NORMAL.png',
+		}
+		
+		tw = [(0,0), (0,7), (0,14), (7,0), (7,14), (14,0), (14,7), (14,14)]
 		dw = [(1,1), (2,2), (3,3), (4,4), (13,13), (12,12), (11,11), (10,10), (1,13), (2,12), (3,11), (4,10), (13,1), (12,2), (11,3), (10,4)]
 		dl = [(0,3), (0,11), (2,6), (2,8), (3,0), (3,7), (3,14), (6,2), (6,6), (6,8), (6,12), (7,3), (7,11), (8,2), (8,6), (8,8), (8,12), (11,0), (11,7), (11,14), (12,6), (12,8), (13,3), (13,11)]
 		tl = [(1,5), (1,9), (5,1), (5,5), (5,9), (5,13), (9,1), (9,5), (9,9), (9,13), (13,5), (13,9)]
-		# for line in range(board_side):
-		# 	new_list = []
-		# 	for column in range(board_side):
-		# 		x0 = column * position_size
-		# 		y0 = line * position_size
-		# 		new_position = Frame(self.board_frame, width=position_size, height=position_size, bg='gray', highlightthickness=1, name=f'({line, column})')
-		# 		new_canvas = Canvas(new_position, width=position_size-2, height=position_size-2, name=f'({line, column})')
-		# 		color = 'gray'
-		# 		#drawing special positions
-		# 		if (line in [0, 7, 14] and column in [0, 7, 14] and (line, column) != (7,7)):
-		# 			new_canvas.place(x=-1, y=-1)
-		# 			color='orange'
-		# 			new_canvas.create_text(20,20, text='TW', font=('Arial', 16))
-		# 		elif ((line, column) in dw):
-		# 			new_canvas.place(x=-1, y=-1)
-		# 			color='yellow'
-		# 			new_canvas.create_text(20,20, text='DW', font=('Arial', 16))
-		# 		elif ((line, column) in dl):
-		# 			new_canvas.place(x=-1, y=-1)
-		# 			color='blue'
-		# 			new_canvas.create_text(20,20, text='DL', font=('Arial', 16))
-		# 		elif ((line, column) in tl):
-		# 			new_canvas.place(x=-1, y=-1)
-		# 			color='purple'
-		# 			new_canvas.create_text(20,20, text='TL', font=('arial', 16))
-		# 		elif ((line, column) == (7,7)):
-		# 			new_canvas.place(x=-1, y=-1)
-		# 			color='black'
-		# 			new_canvas.create_text(20,20, text='#', font=('Arial', 16), fill='white')
+		
+		for line in range(board_side):
+			new_list = []
+			for column in range(board_side):
+				x0 = column * position_size
+				y0 = line * position_size
+				frame_position = Frame(self.board_frame, width=position_size, height=position_size, bg='gray', highlightthickness=0, name=f'({line, column})')
+				# new_canvas = Canvas(new_position, width=position_size-2, height=position_size-2, name=f'({line, column})')
+				# color = 'gray'
+				#drawing special positions
+				if ((line, column) in tw):
+					pil_img = Image.open(POSITIONS_IMG_DICT['TW'])
+					resized_img = pil_img.resize((int(position_size-5), int(position_size-5)), Image.ANTIALIAS)
+					tk_img = ImageTk.PhotoImage(resized_img)
+					label_img = Label(frame_position, bg='orange', image=tk_img, borderwidth=2.5)
+					label_img.image = tk_img
+					label_img.pack()
+					label_img.bind('<Button-1>', lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
+					# new_canvas.place(x=-1, y=-1)
+					color='orange'
+					# new_canvas.create_text(20,20, text='TW', font=('Arial', 16))
+				elif ((line, column) in dw):
+					# new_canvas.place(x=-1, y=-1)
+					color='yellow'
+					# new_canvas.create_text(20,20, text='DW', font=('Arial', 16))
+				elif ((line, column) in dl):
+					# new_canvas.place(x=-1, y=-1)
+					color='blue'
+					# new_canvas.create_text(20,20, text='DL', font=('Arial', 16))
+				elif ((line, column) in tl):
+					# new_canvas.place(x=-1, y=-1)
+					color='purple'
+					# new_canvas.create_text(20,20, text='TL', font=('arial', 16))
+				elif ((line, column) == (7,7)):
+					# new_canvas.place(x=-1, y=-1)
+					# color='black'/
+					# new_canvas.create_text(20,20, text='#', font=('Arial', 16), fill='white')
 	 
 		# 		new_canvas.configure(bg=f'{color}')
 		# 		new_canvas.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
 		# 		new_position.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-		# 		new_position.place(x=x0, y=y0)
 		# 		new_position.pack_propagate(0)
 		# 		new_list.append(new_position)
 		# 	self.positions.append(new_list)
 		
-		image_pil = Image.open('src/images/positions/scrabble_DW.png')
-		RESIZED = image_pil.resize((int(position_size), int(position_size)), Image.ANTIALIAS)
-		tk_image = ImageTk.PhotoImage(RESIZED)
-		label_image = Label(self.board_frame, bd=0, image=tk_image)
-		label_image.image = tk_image
-		label_image.pack()
-		label_image.bind('<Button-1>', lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
-		# new_canvas.place(x=-1, y=-1)
-		color='orange'
+					pil_img = Image.open(POSITIONS_IMG_DICT['DW'])
+					resized_img = pil_img.resize((int(position_size), int(position_size)), Image.ANTIALIAS)
+					tk_img = ImageTk.PhotoImage(resized_img)
+					label_image = Label(self.board_frame, image=tk_img, highlightthickness=2)
+					label_image.image = tk_img
+					label_image.pack()
+					label_image.bind('<Button-1>', lambda event: self.click(event, 'Você selecionou uma posição do tabuleiro', 'Posição selecionada', 'green'))
+					# new_canvas.place(x=-1, y=-1)
+					color='orange'
 
+				frame_position.place(x=x0, y=y0)
 	#click event in positions of the board
 	def click(self, event, main_message: str, message: str, color: str):
 		messagebox.showinfo(f'{main_message}', \
