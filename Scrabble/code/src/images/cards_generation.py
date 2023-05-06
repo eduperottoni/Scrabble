@@ -4,8 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 PATH = 'cards'
 
 # Define constants for the size and layout of the card
-CARD_WIDTH = 225
-CARD_HEIGHT = 225
+CARD_WIDTH = 20
+CARD_HEIGHT = 20
 BORDER_WIDTH = 10
 CARD_TO_BOARD_SPACING = 5
 LETTER_SIZE = 140
@@ -69,7 +69,7 @@ def draw_card(letter: str, value: int) -> None:
     # Draw a border around the card
     draw.rectangle((0, 0, CARD_WIDTH - 1, CARD_HEIGHT - 1), outline=BORDER_COLOR, width=BORDER_WIDTH)
     
-    filename = f'scrabble_{letter}.png'
+    filename = f'scrabble_{letter}.jpg'
     card.save(f'{PATH}/{filename}')
     print(f'File {PATH}/{filename} saved')
     

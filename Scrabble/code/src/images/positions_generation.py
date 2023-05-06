@@ -4,8 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 PATH = 'positions'
 
 # Define constants for the size and layout of the position
-POSITION_WIDTH = 225
-POSITION_HEIGHT = 225
+POSITION_WIDTH = 20
+POSITION_HEIGHT = 20
 BORDER_WIDTH = 10
 LETTER_SIZE = 140
 LETTER_FONT = ImageFont.truetype('../fonts/Roboto-Medium.ttf', LETTER_SIZE)
@@ -33,7 +33,7 @@ def draw_card(pos_desc: str) -> None:
     # Draw a border around the position
     draw.rectangle((0, 0, POSITION_WIDTH - 1, POSITION_HEIGHT - 1), outline=BORDER_COLOR, width=BORDER_WIDTH)
     
-    filename = f'scrabble_{pos_desc}.png'
+    filename = f'scrabble_{pos_desc}.jpg'
     position.save(f'{PATH}/{filename}')
     print(f'File {PATH}/{filename} saved')
 
