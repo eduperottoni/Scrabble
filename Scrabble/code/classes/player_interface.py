@@ -5,8 +5,12 @@ import tkinter as tk
 from tkinter import Frame, Label, messagebox, Button, Menu, Canvas, simpledialog, PhotoImage
 from PIL import Image, ImageTk
 
+from classes.round_manager import RoundManager
+from classes.enums import State
+from constants import messages
 class PlayerInterface(DogPlayerInterface):
 	def __init__(self, window_size: tuple, board_side:int, title: str):
+		self.round_manager = RoundManager()
 		self.window_size = window_size
 		self.board_side = board_side
 		self.board_size = 2/3 * window_size[0]
@@ -81,21 +85,40 @@ class PlayerInterface(DogPlayerInterface):
 	def __activate_user_actions(self):
 		for button in self.buttons.keys():
 			if button == 'button(submit)':
-				button.bind("<Button-1>", lambda event: self.general_click(event, 'Envio de palavra', 'Quer realmente submeter a palavra?', 'Palavra será analisada', 'Voltando ao jogo'))
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(
+						event, 
+						'Envio de palavra',
+						'Quer realmente submeter a palavra?',
+						'Palavra será analisada', 'Voltando ao jogo'))
 			elif button == 'button(return)':
-				button.bind("<Button-1>", lambda event: self.general_click(event, 'Retorno de cards ao pack', 'Os últimos cards adicionados ao tabuleiro serão retornados ao pack. Quer mesmo?', 'Devolvendo packs', 'Voltando ao jogo'))
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(
+						event,
+						'Retorno de cards ao pack',
+						'Os últimos cards adicionados ao tabuleiro serão retornados ao pack. Quer mesmo?',
+						'Devolvendo packs', 'Voltando ao jogo'))
 			elif button == 'button(giveup)':
-				button.bind("<Button-1>", lambda event: self.general_click(event, 'Passar a vez', 'Certeza que quer passar a vez?', 'Trocando de turno', 'Voltando ao jogo'))
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(event,
+				      'Passar a vez', 'Certeza que quer passar a vez?',
+					  'Trocando de turno', 'Voltando ao jogo'))
 			elif button == 'button(change)':
-				button.bind("<Button-1>", lambda event: self.general_click(event, 'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?', 'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(event,
+				      'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?',
+					  'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
 		for label in self.board_positions:
 			label.bind(
 				'<Button-1>',
 				lambda event: self.click(
 					event,
 					'Você selecionou uma posição do tabuleiro', 
-					'Posição selecionada', 
-					'green')
+					'Posição selecionada', 'green')
 			)
 
 	#Drawing button
@@ -151,6 +174,13 @@ class PlayerInterface(DogPlayerInterface):
 				pil_img = Image.open(POSITIONS_IMG_DICT[dict_key])
 				resized_img = pil_img.resize((int(position_size)-6, int(position_size)-6), Image.ANTIALIAS)
 				tk_img = ImageTk.PhotoImage(resized_img)
+				label_img = Label(
+					frame_position, 
+					bg='white', 
+					image=tk_img, 
+					borderwidth=3,
+					name=f'board({line, column})'
+				)
 				label_img.image = tk_img
 				label_img.pack()
 				frame_position.place(x=x0, y=y0)
@@ -223,10 +253,26 @@ class PlayerInterface(DogPlayerInterface):
 	
 	#Starting game (com o DOG)
 	def start_game(self) -> None:
-		self.__show_message('Início do jogo', 'O jogo será iniciado')
-		start_status = self.dog_server_interface.start_match(2)
-		message = start_status.get_message()
-		self.__show_message(title='Mensagem do DOG', message=message)
+		#TODO Inserir validação de estado do jogo
+		# Se o estado do jogo estiver em NOT_INITIALIZED
+		if (self.round_manager.match_state == State.NOT_INITIALIZED):
+			print('ESTADO DO JOGO É VÁLIDO PARA SEU INÍCIO')
+			answer = self.__askquestion(messages.START_MATCH_TITLE, messages.START_MACTH_QUESTION)
+			if answer:
+				print('ENVIANDO PEDIDO DE INÍCIO DO JOGO AO SERVIDOR')
+				start_status = self.dog_server_interface.start_match(2)
+				code = start_status.get_code()
+				message = start_status.get_message()
+				if code == '0' or code == '1':
+					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
+				else:
+					players_response = start_status.get_players()
+					print('2 JOGADORES ENCONTRADOS PARA INÍCIO DO JOGO')
+					local_player_id = start_status.get_local_id()
+					#TODO Implementar o método start_match() no RoundManager, a ser chamado abaixo
+					#self.round_manager.start_match(players_response, local_player_id)
+					#TODO Chamar a ativação da ação do usuário para ações nos widgets da interface
+					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 
 
 	#Receiving game's start from DOG
