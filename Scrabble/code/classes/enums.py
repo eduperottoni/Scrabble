@@ -6,6 +6,7 @@ class State(Enum):
     ABANDONED = 3
     FINISHED = 4
     WAITING_REMOTE_MOVE = 5
+    LOCAL_MOVE = 6
 
 class Move(Enum):
     CONSTRUCTION = 1

@@ -267,12 +267,22 @@ class PlayerInterface(DogPlayerInterface):
 					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 				else:
 					players_response = start_status.get_players()
+					# Building player dict and order list to pass as parameter in RoundManager.start_match()
+					players = {'local': 
+								{'id': players_response[0][1],
+	 							'name': players_response[0][0],
+								'turn': True if players_response[0][2] == 1 else False},
+							   'remote':
+							   	{'id': players_response[1][1],
+	    						'name': players_response[1][0],
+								'turn': True if players_response[1][2] == 1 else False}
+							}
 					print('2 JOGADORES ENCONTRADOS PARA INÍCIO DO JOGO')
-					local_player_id = start_status.get_local_id()
-					#TODO Implementar o método start_match() no RoundManager, a ser chamado abaixo
-					#self.round_manager.start_match(players_response, local_player_id)
+					self.round_manager.define_players_and_turn(players)
 					#TODO Chamar a ativação da ação do usuário para ações nos widgets da interface
+					#TODO Chamar todas os métodos que inicializam estados de demais objetos utilizados
 					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
+
 
 
 	#Receiving game's start from DOG
