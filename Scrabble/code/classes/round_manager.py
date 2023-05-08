@@ -32,7 +32,7 @@ class RoundManager:
         self.__remote_player = remote_player
     
 
-    def define_players_and_turn(self, players: dict) -> None:
+    def start_game(self, players: dict) -> None:
         """
         Define the players and their turn (who starts the match)
 

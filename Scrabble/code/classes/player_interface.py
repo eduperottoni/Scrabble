@@ -278,9 +278,8 @@ class PlayerInterface(DogPlayerInterface):
 								'turn': True if players_response[1][2] == 1 else False}
 							}
 					print('2 JOGADORES ENCONTRADOS PARA INÍCIO DO JOGO')
-					self.round_manager.define_players_and_turn(players)
+					self.round_manager.start_game(players)
 					#TODO Chamar a ativação da ação do usuário para ações nos widgets da interface
-					#TODO Chamar todas os métodos que inicializam estados de demais objetos utilizados
 					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 
 
