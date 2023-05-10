@@ -11,6 +11,7 @@ from constants import messages
 class PlayerInterface(DogPlayerInterface):
 	def __init__(self, window_size: tuple, board_side:int, title: str):
 		self.round_manager = RoundManager()
+		self.round_manager.player_interface = self
 		self.window_size = window_size
 		self.board_side = board_side
 		self.board_size = 2/3 * window_size[0]
@@ -55,23 +56,23 @@ class PlayerInterface(DogPlayerInterface):
 		self.cards = []
 		self.scores = []
 		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg="green")
-		player_height = 1/6*window_size[0]
+		self.player_frame_height = 1/6*window_size[0]
 		self.board_frame = Frame(self.main_frame, width=self.board_size, height=self.board_size, bg="blue")
-		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
+		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg='orange')
 		self.remote_player_frame.pack(side='top')
 		self.scores.append(self.__draw_score(self.remote_player_frame, (200,100), (720, 30)))
-		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=player_height, bg='orange')
+		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg='orange')
 		self.local_player_frame.pack(side='bottom')
 		self.scores.append(self.__draw_score(self.local_player_frame, (200,100), (720, 30)))
 		for frame in [self.board_frame, self.main_frame]:
 			frame.pack()
 			frame.pack_propagate(0)
-		self.__draw_packs((self.board_size/board_side*7, 1/3*player_height), self.board_size/board_side)
 		self.__render_gui()
 
 	#Rendering game window
 	def __render_gui(self):
 		self.__initialize_dog()
+		self.__draw_packs((self.board_size/self.board_side*7, 1/3*self.player_frame_height), self.board_size/self.board_side)
 		self.__draw_board(self.board_size/self.board_side, self.board_side)
 		self.__draw_buttons()
 		self.window.mainloop()
@@ -82,44 +83,18 @@ class PlayerInterface(DogPlayerInterface):
 		message = self.dog_server_interface.initialize(player_name, self)
 		messagebox.showinfo(message=message)
 
-	def __activate_user_actions(self):
-		for button in self.buttons.keys():
-			if button == 'button(submit)':
-				button.bind(
-					"<Button-1>",
-					lambda event: self.general_click(
-						event, 
-						'Envio de palavra',
-						'Quer realmente submeter a palavra?',
-						'Palavra será analisada', 'Voltando ao jogo'))
-			elif button == 'button(return)':
-				button.bind(
-					"<Button-1>",
-					lambda event: self.general_click(
-						event,
-						'Retorno de cards ao pack',
-						'Os últimos cards adicionados ao tabuleiro serão retornados ao pack. Quer mesmo?',
-						'Devolvendo packs', 'Voltando ao jogo'))
-			elif button == 'button(giveup)':
-				button.bind(
-					"<Button-1>",
-					lambda event: self.general_click(event,
-				      'Passar a vez', 'Certeza que quer passar a vez?',
-					  'Trocando de turno', 'Voltando ao jogo'))
-			elif button == 'button(change)':
-				button.bind(
-					"<Button-1>",
-					lambda event: self.general_click(event,
-				      'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?',
-					  'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
-		for label in self.board_positions:
-			label.bind(
-				'<Button-1>',
-				lambda event: self.click(
-					event,
-					'Você selecionou uma posição do tabuleiro', 
-					'Posição selecionada', 'green')
-			)
+	def __load_img(self, img_path: str, size: int) -> ImageTk.PhotoImage:
+		"""
+		Loads the image in the label, using ImageTk from PIL
+		
+		:param img_path: path to the image
+		:param size: size of the image
+		"""
+		pil_img = Image.open(img_path)
+		resized_img = pil_img.resize((size, size), Image.ANTIALIAS)
+		tk_img = ImageTk.PhotoImage(resized_img)
+		return tk_img
+		
 
 	#Drawing button
 	def __draw_button(self, btn_text: str, width: float, height: float, position: tuple, main_frame: Frame, name: str) -> Button: 
@@ -130,7 +105,58 @@ class PlayerInterface(DogPlayerInterface):
 	def __draw_buttons(self):
 		for button_name, button_config in self.buttons.items():
 			button = self.__draw_button(button_config['btn_description'], None, None, button_config['btn_position'], self.local_player_frame, button_name)
+			if button_name == 'button(submit)':
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(
+						event, 
+						'Envio de palavra',
+						'Quer realmente submeter a palavra?',
+						'Palavra será analisada', 'Voltando ao jogo'))
+			elif button_name == 'button(return)':
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(
+						event,
+						'Retorno de cards ao pack',
+						'Os últimos cards adicionados ao tabuleiro serão retornados ao pack. Quer mesmo?',
+						'Devolvendo packs', 'Voltando ao jogo'))
+			elif button_name == 'button(giveup)':
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(event,
+				      'Passar a vez', 'Certeza que quer passar a vez?',
+					  'Trocando de turno', 'Voltando ao jogo'))
+			elif button_name == 'button(change)':
+				button.bind(
+					"<Button-1>",
+					lambda event: self.general_click(event,
+				      'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?',
+					  'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
 			self.buttons[button_name]['btn_object'] = button
+	
+	#Drawing packs
+	def __draw_packs(self, pack_size: tuple, card_size: float):
+		self.frame_remote_pack = Frame(self.remote_player_frame, width=pack_size[0], height=pack_size[1], bg="blue")
+		self.frame_local_pack = Frame(self.local_player_frame, width=pack_size[0], height=pack_size[1], bg="blue")
+		
+		self.label_remote_player = Label(self.remote_player_frame, text="Remote player name", width=40)
+		self.label_local_player = Label(self.local_player_frame, text="Local player name", width=40)
+
+		self.label_local_player.place(x=340, y=40)
+		self.label_remote_player.place(x=340, y=120)
+		self.frame_remote_pack.place(x=340,y=30)
+		self.frame_local_pack.place(x =340, y=90)
+
+		for i in range(7):
+			new_remote_pack_pos = Frame(self.frame_remote_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'remote({0,i})')
+			new_local_pack_pos = Frame(self.frame_local_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'local({0,i})')
+			new_local_pack_pos.bind("<Button-1>", lambda event: self.select_card_from_pack(event))
+			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
+				pack_position.place(x=i*card_size, y=5)
+				self.pack_positions.append(pack_position)
+			card = self.__draw_card(new_local_pack_pos, card_size, 'A', 8)
+			self.cards.append(card)
 	
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
@@ -171,22 +197,25 @@ class PlayerInterface(DogPlayerInterface):
 					dict_key = '*'
 				
 				# Creating Label's image
-				pil_img = Image.open(POSITIONS_IMG_DICT[dict_key])
-				resized_img = pil_img.resize((int(position_size)-6, int(position_size)-6), Image.ANTIALIAS)
-				tk_img = ImageTk.PhotoImage(resized_img)
-				label_img = Label(
+				image = self.__load_img(POSITIONS_IMG_DICT[dict_key], int(position_size)-6)		
+				label = Label(
 					frame_position, 
-					bg='white', 
-					image=tk_img, 
+					bg='white',
+					image=image,
 					borderwidth=3,
-					name=f'board({line, column})'
+					name=f'board{line, column}'
 				)
-				label_img.image = tk_img
-				label_img.pack()
+				label.image = image
+				label.bind(
+				'<Button-1>',
+				lambda event: self.select_board_position(
+					event)
+				)
+				label.pack()
 				frame_position.place(x=x0, y=y0)
 
 				# Iserting label on line
-				positions_line.append(label_img)
+				positions_line.append(label)
 
 			# Iserting line on positions matrix
 			self.board_positions.append(positions_line)
@@ -212,37 +241,31 @@ class PlayerInterface(DogPlayerInterface):
 		answer = messagebox.askquestion(title, ask_message, icon='question')
 		return True if answer == 'yes' else False
 	
-	def __show_message(self, title: str, message: str) -> None:
+	def show_message(self, title: str, message: str) -> None:
 		messagebox.showinfo(title=title, message=message)
 
-	#Drawing packs
-	def __draw_packs(self, pack_size: tuple, card_size: float):
-		self.frame_remote_pack = Frame(self.remote_player_frame, width=pack_size[0], height=pack_size[1], bg="blue")
-		self.frame_local_pack = Frame(self.local_player_frame, width=pack_size[0], height=pack_size[1], bg="blue")
-		self.label_remote_player = Label(self.remote_player_frame, text="Remote player name", width=40)
-		self.label_local_player = Label(self.local_player_frame, text="Local player name", width=40)
-		self.label_local_player.place(x=340, y=40)
-		self.label_remote_player.place(x=340, y=120)
-		self.frame_remote_pack.place(x=340,y=30)
-		self.frame_local_pack.place(x =340, y=90)
-		for i in range(7):
-			new_remote_pack_pos = Frame(self.frame_remote_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'remote({0,i})')
-			new_local_pack_pos = Frame(self.frame_local_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'local({0,i})')
-			new_local_pack_pos.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou um card do pack', 'Posição do card selecionado no pack', 'red'))
-			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
-				pack_position.place(x=i*card_size, y=5)
-				self.pack_positions.append(pack_position)
-			card = self.__draw_card(new_local_pack_pos, (card_size, card_size), 'A', 8)
-			self.cards.append(card)
 	
-	#draw card (using Canvas widget)
-	def __draw_card(self, main_frame: Frame, size: tuple, letter: str, value: int) -> Canvas:
-		card = Canvas(main_frame, width=size[0], height=size[1], bg='green', name=f'{main_frame.winfo_name()}')
-		card.place(x=0,y=0)
-		card.create_text(16, 16, text=f'{letter}', font=('Arial', 16))
-		card.create_text(size[0] - 10, size[1] - 10, text=f'{value}', font=('Arial', 8))
-		card.bind("<Button-1>", lambda event: self.click(event, 'Você selecionou um card do pack', 'Posição do card selecionado no pack', 'red'))
-		return card
+	#draw card (using Label widget)
+	def __draw_card(self, position: Frame, size: int, letter: str, value: int) -> Label:
+		RELATIVE_PATH = 'src/images/cards/scrabble'
+		# label = 
+		
+		image = self.__load_img(f'{RELATIVE_PATH}_{letter.upper()}.png', int(size)-6)
+		card = Label(position, width=size, height=size, image=image, name=f'card({letter})')
+		card = Label(
+					position, 
+					bg='green',
+					image=image,
+					borderwidth=3,
+					name=f'card{letter}'
+				)
+		card.image = image
+		card.bind(
+		'<Button-1>',
+		lambda event: self.select_card_from_pack(
+			event)
+		)
+		card.pack()
 	
 	#Drawing scores (using Canvas widget)
 	def __draw_score(self, main_frame: Frame, size: tuple, position: tuple) -> Canvas:
@@ -263,8 +286,9 @@ class PlayerInterface(DogPlayerInterface):
 				start_status = self.dog_server_interface.start_match(2)
 				code = start_status.get_code()
 				message = start_status.get_message()
+				# 0 - file game.id not found; 1 - not connected to server; 2 - connected without match; 3 - waiting move (even if it's the local player's turn)
 				if code == '0' or code == '1':
-					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
+					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 				else:
 					players_response = start_status.get_players()
 					# Building player dict and order list to pass as parameter in RoundManager.start_match()
@@ -279,12 +303,24 @@ class PlayerInterface(DogPlayerInterface):
 							}
 					print('2 JOGADORES ENCONTRADOS PARA INÍCIO DO JOGO')
 					self.round_manager.start_game(players)
-					#TODO Chamar a ativação da ação do usuário para ações nos widgets da interface
-					self.__show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
+					#TODO Não podemos fazer isso, temos que conferir se a partida está em andamento (se foi iniciada) no clique
+					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 
+	def select_board_position(self, event) -> None:
+		"""
+		Method to handle with selected board position
+		Calls RoundManager.select_board_position(coordinates)
 
+		:param event: event generated by click in position
+		"""
+		label_name = event.widget.winfo_name()
+		print(label_name)
+		coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
+		coord_tuple = (int(coord_list[0]), int(coord_list[1]))
+		self.round_manager.select_board_position(coord_tuple)
 
 	#Receiving game's start from DOG
 	def receive_start(self, start_status: StartStatus) -> None:
+		#TODO implementar segundo DOG
 		message = start_status.get_message()
-		self.__show_message(title='Mensagem do DOG', message=message)
+		self.show_message(title='Mensagem do DOG', message=message)

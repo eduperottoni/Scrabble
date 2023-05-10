@@ -1,51 +1,26 @@
+import sys
 from PIL import Image, ImageDraw, ImageFont
+
+sys.path.insert(1, '../../constants')
+
+from cards_values import CARDS_VALUES_BY_LETTER
 
 #Path to save the cards
 PATH = 'cards'
 
 # Define constants for the size and layout of the card
-CARD_WIDTH = 20
-CARD_HEIGHT = 20
-BORDER_WIDTH = 10
-CARD_TO_BOARD_SPACING = 5
-LETTER_SIZE = 140
-VALUE_SIZE = 50
+CARD_WIDTH = 100
+CARD_HEIGHT = 100
+BORDER_WIDTH = 2
+CARD_TO_BOARD_SPACING = 2
+LETTER_SIZE = 70
+VALUE_SIZE = 30
 LETTER_FONT = ImageFont.truetype('../fonts/Roboto-Medium.ttf', LETTER_SIZE)
 VALUE_FONT = ImageFont.truetype('../fonts/Roboto-Medium.ttf', VALUE_SIZE)
 
 # Define the colors for the card background and border
 CARD_COLOR = (255, 255, 255)
 BORDER_COLOR = (0, 0, 0)
-
-# Define a dictionary of letters and their point values
-LETTER_VALUES = {
-    'A': 1,
-    'B': 3,
-    'C': 3,
-    'D': 2,
-    'E': 1,
-    'F': 4,
-    'G': 2,
-    'H': 4,
-    'I': 1,
-    'J': 8,
-    'K': 5,
-    'L': 1,
-    'M': 3,
-    'N': 1,
-    'O': 1,
-    'P': 3,
-    'Q': 10,
-    'R': 1,
-    'S': 1,
-    'T': 1,
-    'U': 1,
-    'V': 4,
-    'W': 4,
-    'X': 8,
-    'Y': 4,
-    'Z': 10
-}
 
 # Define a function to draw a card for a given letter and its point value
 def draw_card(letter: str, value: int) -> None:
@@ -69,11 +44,11 @@ def draw_card(letter: str, value: int) -> None:
     # Draw a border around the card
     draw.rectangle((0, 0, CARD_WIDTH - 1, CARD_HEIGHT - 1), outline=BORDER_COLOR, width=BORDER_WIDTH)
     
-    filename = f'scrabble_{letter}.jpg'
+    filename = f'scrabble_{letter}.png'
     card.save(f'{PATH}/{filename}')
     print(f'File {PATH}/{filename} saved')
     
     # return card
 
-for letter, value in LETTER_VALUES.items():
+for letter, value in CARDS_VALUES_BY_LETTER.items():
     draw_card(letter, value)
