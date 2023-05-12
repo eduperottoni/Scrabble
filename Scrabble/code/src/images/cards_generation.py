@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(1, '../../constants')
 
-from cards_values import CARDS_VALUES_BY_LETTER
+from cards import CARDS_VALUES_BY_LETTER
 
 #Path to save the cards
 PATH = 'cards'

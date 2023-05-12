@@ -1,5 +1,6 @@
 from classes.enums import State
 from classes.player import Player
+from classes.board import Board
 from constants import messages
 
 class RoundManager:
@@ -48,7 +49,6 @@ class RoundManager:
         if players['local']['turn']:
             self.local_player.toogle_turn()
             print('VEZ DE JOGAR É DO JOGADOR LOCAL')
-            # TODO definir método abaixo
             self.__initialize_and_distribute_cards()
             self.__match_state = State.LOCAL_MOVE
         else:
@@ -60,6 +60,8 @@ class RoundManager:
         """
         Method to initialize bag's cards and distribute then to players
         """
+        print('Construindo board')
+        self.__board = Board()
         print('Criando e distribuindo cards')
         
 
