@@ -276,7 +276,6 @@ class PlayerInterface(DogPlayerInterface):
 	
 	#Starting game (com o DOG)
 	def start_game(self) -> None:
-		#TODO Inserir validação de estado do jogo
 		# Se o estado do jogo estiver em NOT_INITIALIZED
 		if (self.round_manager.match_state == State.NOT_INITIALIZED):
 			print('ESTADO DO JOGO É VÁLIDO PARA SEU INÍCIO')
@@ -291,21 +290,27 @@ class PlayerInterface(DogPlayerInterface):
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 				else:
 					players_response = start_status.get_players()
+					print('PLAYERS_RESPONSE_ABAIXO')
+					print(players_response)
 					# Building player dict and order list to pass as parameter in RoundManager.start_match()
-					players = {'local': 
-								{'id': players_response[0][1],
-	 							'name': players_response[0][0],
-								'turn': True if players_response[0][2] == 1 else False},
-							   'remote':
-							   	{'id': players_response[1][1],
-	    						'name': players_response[1][0],
-								'turn': True if players_response[1][2] == 1 else False}
-							}
+					players = self.__status_response_to_dict(players_response)
 					print('2 JOGADORES ENCONTRADOS PARA INÍCIO DO JOGO')
 					self.round_manager.start_game(players)
 					#TODO Não podemos fazer isso, temos que conferir se a partida está em andamento (se foi iniciada) no clique
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 
+	def __status_response_to_dict(self, response: list):
+		dict = {'local': 
+					{'id': response[0][1],
+					'name': response[0][0],
+					'turn': True if response[0][2] == '1' else False},
+				'remote':
+					{'id': response[1][1],
+					'name': response[1][0],
+					'turn': True if response[1][2] == '1' else False}
+				}
+		return dict
+	
 	def select_board_position(self, event) -> None:
 		"""
 		Method to handle with selected board position
@@ -321,6 +326,20 @@ class PlayerInterface(DogPlayerInterface):
 
 	#Receiving game's start from DOG
 	def receive_start(self, start_status: StartStatus) -> None:
-		#TODO implementar segundo DOG
+		self.reset_game()
+		players_response = start_status.get_players()
+		print('PLAYERS_RESPONSE_ABAIXO')
+		print(players_response)
+		players = self.__status_response_to_dict(players_response)
+		self.round_manager.start_game(players)
 		message = start_status.get_message()
 		self.show_message(title='Mensagem do DOG', message=message)
+		#TODO pegar game config
+		#TODO chamar o update da interface
+
+	def reset_game(self):
+		match_state = self.round_manager.match_state
+		if match_state in [State.ABANDONED, State.FINISHED]:
+			self.round_manager.reset_game()
+			#TODO pegar game config
+			#TODO chamar o update da GUI

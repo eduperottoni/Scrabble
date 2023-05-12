@@ -44,6 +44,7 @@ class RoundManager:
         """
         self.local_player.initialize(players['local']['id'], players['local']['name'])
         self.remote_player.initialize(players['remote']['id'], players['remote']['name'])
+        print(players)
         if players['local']['turn']:
             self.local_player.toogle_turn()
             print('VEZ DE JOGAR É DO JOGADOR LOCAL')
