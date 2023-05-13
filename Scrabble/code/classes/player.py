@@ -1,4 +1,5 @@
 from classes.pack import Pack
+import json
 class Player:
     def __init__(self):
         self.__id = ''
@@ -83,3 +84,9 @@ class Player:
         Change logically the is_turn attribute (change the turn of the match)
         """
         self.__is_turn = not self.is_turn
+
+    def convert_to_json(self):
+        a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+        json_string = a.replace("'", "\"").replace('_Pack__', '').replace('_Card__', '').replace('_Player__', '')
+        _json = json.loads(json_string)
+        return _json

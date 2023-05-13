@@ -1,4 +1,4 @@
-from classes.enums import State
+from classes.enums import State, Move
 from classes.player import Player
 from classes.board import Board
 from constants import messages
@@ -9,7 +9,8 @@ class RoundManager:
         self.__local_player = Player()
         self.__remote_player = Player()
         self.__board = Board()
-        self.player_interface = None
+        self.__player_interface = None
+        self.__move_type = None
 
     @property
     def match_state(self) -> State:
@@ -22,6 +23,14 @@ class RoundManager:
     @property
     def remote_player(self) -> Player:
         return self.__remote_player
+    
+    @property
+    def move_type(self) -> Move:
+        return self.__move_type
+
+    @move_type.setter
+    def move_type(self, move_type: Move):
+        self.__move_type = move_type
     
     @match_state.setter
     def match_state(self, match_state: State) -> None:
@@ -51,7 +60,8 @@ class RoundManager:
             self.local_player.toogle_turn()
             print('VEZ DE JOGAR É DO JOGADOR LOCAL')
             self.__distribute_cards()
-            self.__match_state = State.INITIAL
+            self.__match_state = State.IN_PROGRESS
+            self.__move_type = Move.INITIAL
         else:
             self.remote_player.toogle_turn()
             print('VEZ É DO JOGADOR REMOTO')
@@ -66,16 +76,7 @@ class RoundManager:
         local_cards = self.__board.bag.get_random_cards(7)
         self.local_player.pack.insert_cards(local_cards, [0,1,2,3,4,5,6])
         self.remote_player.pack.insert_cards(remote_cards, [0,1,2,3,4,5,6])
-        self.remote_player.pack.convert_to_json()
-        print('CARTASDO REMOTO')
-        for card in self.remote_player.pack.cards:
-            print(card.letter)
-        print('CARTASDO LOCAL')
-        for card in self.local_player.pack.cards:
-            print(card.letter)
 
-        print('Criando e distribuindo cards')
-        
     def select_board_position(self, coord: tuple) -> int:
         """
         Method to handle with the SELECT BOARD POSITION use case
@@ -88,3 +89,11 @@ class RoundManager:
             print('Lidando com a lógica do jogo')
         else:
             self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
+
+    def convert_move_to_dict(self):
+        move = {}
+        move['match_status'] = str(self.__match_state).replace('State.', '')
+        move['move_type'] = str(self.__move_type).replace('Move.', '')
+        move['remote_player'] = self.__remote_player.convert_to_json()
+        move['local_player'] = self.__local_player.convert_to_json()
+        return move

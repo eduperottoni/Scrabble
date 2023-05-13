@@ -5,7 +5,6 @@ class Card:
         self.__value = CARDS_VALUES_BY_LETTER[letter]
         self.__enabled = False
         self.__selected = False
-        print(f'Card criado LETRA: {self.letter} VALOR: {self.value}')
     
     @property
     def letter(self):

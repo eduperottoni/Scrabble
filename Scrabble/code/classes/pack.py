@@ -1,7 +1,6 @@
 from classes.exceptions import PositionAlreadyHasCardException
 from classes.exceptions import PositionDoesNotHaveCardException
 from classes.exceptions import CardNotSelectedException
-import json
 
 class Pack:
     def __init__(self):
@@ -45,9 +44,3 @@ class Pack:
 
     def count_cards(self) -> int:
         return len(self.__cards)
-    
-    def convert_to_json(self):
-        a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-        # json_acceptable_string = a.replace("'", "\"")
-        json_ = json.loads(a)
-        print(json_)
