@@ -1,9 +1,11 @@
+from constants.cards import CARDS_VALUES_BY_LETTER
 class Card:
-    def __init__(self, letter: str, value: int):
+    def __init__(self, letter: str):
         self.__letter = letter
-        self.__value = value
+        self.__value = CARDS_VALUES_BY_LETTER[letter]
         self.__enabled = False
         self.__selected = False
+        print(f'Card criado LETRA: {self.letter} VALOR: {self.value}')
     
     @property
     def letter(self):

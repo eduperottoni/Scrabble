@@ -8,6 +8,7 @@ class RoundManager:
         self.__match_state = State.NOT_INITIALIZED
         self.__local_player = Player()
         self.__remote_player = Player()
+        self.__board = Board()
         self.player_interface = None
 
     @property
@@ -49,24 +50,32 @@ class RoundManager:
         if players['local']['turn']:
             self.local_player.toogle_turn()
             print('VEZ DE JOGAR É DO JOGADOR LOCAL')
-            self.__initialize_and_distribute_cards()
-            self.__match_state = State.LOCAL_MOVE
+            self.__distribute_cards()
+            self.__match_state = State.INITIAL
         else:
             self.remote_player.toogle_turn()
             print('VEZ É DO JOGADOR REMOTO')
             self.__match_state = State.WAITING_REMOTE_MOVE
 
-    def __initialize_and_distribute_cards(self):
+    def __distribute_cards(self):
         """
         Method to initialize bag's cards and distribute then to players
         """
         print('Construindo board')
-        self.__board = Board()
+        remote_cards = self.__board.bag.get_random_cards(7)
+        local_cards = self.__board.bag.get_random_cards(7)
+        self.local_player.pack.insert_cards(local_cards, [0,1,2,3,4,5,6])
+        self.remote_player.pack.insert_cards(remote_cards, [0,1,2,3,4,5,6])
+        self.remote_player.pack.convert_to_json()
+        print('CARTASDO REMOTO')
+        for card in self.remote_player.pack.cards:
+            print(card.letter)
+        print('CARTASDO LOCAL')
+        for card in self.local_player.pack.cards:
+            print(card.letter)
+
         print('Criando e distribuindo cards')
         
-
-
-
     def select_board_position(self, coord: tuple) -> int:
         """
         Method to handle with the SELECT BOARD POSITION use case

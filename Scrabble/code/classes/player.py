@@ -1,3 +1,4 @@
+from classes.pack import Pack
 class Player:
     def __init__(self):
         self.__id = ''
@@ -6,7 +7,7 @@ class Player:
         self.__score = 0
         self.__dropouts = 0
         #TODO Criar o atributo pack
-        #self.pack = Pack()
+        self.pack = Pack()
 
     @property
     def id(self):
