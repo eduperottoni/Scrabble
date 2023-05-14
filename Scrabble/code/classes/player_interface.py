@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 
 from classes.round_manager import RoundManager
 from classes.enums import State, Move
-from constants import messages
+from constants import messages, interface
 class PlayerInterface(DogPlayerInterface):
 	def __init__(self, window_size: tuple, board_side:int, title: str):
 		self.round_manager = RoundManager()
@@ -54,16 +54,16 @@ class PlayerInterface(DogPlayerInterface):
 		      				   'btn_position': (20,120)}
 		}
 		self.local_pack_cards = []
-		self.scores = []
-		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg="green")
+		self.scores = {}
+		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg=interface.BG_MAIN_COLOR)
 		self.player_frame_height = 1/6*window_size[0]
-		self.board_frame = Frame(self.main_frame, width=self.board_size, height=self.board_size, bg="blue")
-		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg='orange')
+		self.board_frame = Frame(self.main_frame, width=self.board_size, height=self.board_size, bg=interface.BG_MAIN_COLOR)
+		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg=interface.BG_PLAYERS_SPACE)
 		self.remote_player_frame.pack(side='top')
-		self.scores.append(self.__draw_score(self.remote_player_frame, (200,100), (720, 30)))
-		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg='orange')
+		self.scores['remote'] = self.__draw_score(self.remote_player_frame, (200,100), (720, 30))
+		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg=interface.BG_PLAYERS_SPACE)
 		self.local_player_frame.pack(side='bottom')
-		self.scores.append(self.__draw_score(self.local_player_frame, (200,100), (720, 30)))
+		self.scores['local'] = self.__draw_score(self.local_player_frame, (200,100), (720, 30))
 		for frame in [self.board_frame, self.main_frame]:
 			frame.pack()
 			frame.pack_propagate(0)
@@ -147,20 +147,25 @@ class PlayerInterface(DogPlayerInterface):
 	
 	#Drawing packs
 	def __draw_packs(self, pack_size: tuple, card_size: float):
-		self.frame_remote_pack = Frame(self.remote_player_frame, width=pack_size[0], height=pack_size[1], bg="blue")
-		self.frame_local_pack = Frame(self.local_player_frame, width=pack_size[0], height=pack_size[1], bg="blue")
+		font = interface.FONT_PLAYERS_NAMES
+		position_bg = interface.BG_PACKS_POSITIONS
+		player_name = interface.INITIAL_PLAYER_NAME
+
+
+		self.frame_remote_pack = Frame(self.remote_player_frame, width=pack_size[0], height=pack_size[1])
+		self.frame_local_pack = Frame(self.local_player_frame, width=pack_size[0], height=pack_size[1])
 		
-		self.label_remote_player = Label(self.remote_player_frame, text="Remote player name", width=40)
-		self.label_local_player = Label(self.local_player_frame, text="Local player name", width=40)
+		self.label_remote_player = Label(self.remote_player_frame, font=font, text=player_name, width=29, borderwidth=5)
+		self.label_local_player = Label(self.local_player_frame, font=font, text=player_name, width=29, borderwidth=5)
 
 		self.label_local_player.place(x=340, y=40)
-		self.label_remote_player.place(x=340, y=120)
+		self.label_remote_player.place(x=340, y=100)
 		self.frame_remote_pack.place(x=340,y=30)
-		self.frame_local_pack.place(x =340, y=90)
+		self.frame_local_pack.place(x=340, y=90)
 
 		for i in range(7):
-			new_remote_pack_pos = Frame(self.frame_remote_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'remote({0,i})')
-			new_local_pack_pos = Frame(self.frame_local_pack, width=card_size, height=card_size, bg='green', highlightthickness=1, name=f'local({0,i})')
+			new_remote_pack_pos = Frame(self.frame_remote_pack, width=card_size, height=card_size, bg=position_bg, highlightthickness=1, name=f'remote({0,i})')
+			new_local_pack_pos = Frame(self.frame_local_pack, width=card_size, height=card_size, bg=position_bg, highlightthickness=1, name=f'local({0,i})')
 			new_local_pack_pos.bind("<Button-1>", lambda event: self.select_card_from_pack(event))
 			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
 				pack_position.place(x=i*card_size, y=5)
@@ -211,7 +216,7 @@ class PlayerInterface(DogPlayerInterface):
 				image = self.__load_img(POSITIONS_IMG_DICT[dict_key], int(position_size)-6)		
 				label = Label(
 					frame_position, 
-					bg='white',
+					bg=interface.BG_BOARD_POSITIONS,
 					image=image,
 					borderwidth=3,
 					name=f'board{line, column}'
@@ -278,10 +283,23 @@ class PlayerInterface(DogPlayerInterface):
 	
 	# Drawing scores (using Canvas widget)
 	def __draw_score(self, main_frame: Frame, size: tuple, position: tuple) -> Canvas:
-		new_score = Canvas(main_frame, width=size[0], height=size[1], bg='blue')
-		new_score.create_text(100, 16, text="PONTUAÇÃO", font=('Arial', 16))
+		# TODO definir essas variáveis como globais, para que fique tudo paramétrico
+		title_font = interface.FONT_SCORE_TITLE
+		score_font = interface.FONT_SCORE_NUMBER
+		bg = interface.BG_PLAYERS_SPACE
+		score_bg = interface.BG_PLAYERS_SCORE
+		new_score = Canvas(main_frame, width=size[0], height=size[1], bg=bg, borderwidth=3, highlightthickness=0)
+		label_title = Label(new_score, width=int(size[0]), text='Pontuação', font=title_font, bg=bg, borderwidth=10)
+		new_score.create_window(70, 14, window=label_title)
+		label_score = Label(new_score, text='0', font=score_font, bg=score_bg)
+		new_score.create_window(70, 60, window=label_score, width=int(size[0]/2))
+
 		new_score.place(x=position[0], y=position[1])
-		return new_score
+		# label_title.place(x=10, y=5)
+		# label_score.place(x=0, y=0)
+		# new_score.create_text(100, 16, text="PONTUAÇÃO", font=('Arial', 16))
+		# new_score.create_text(100, 50, text="0", font=('Arial', 16))
+		return label_score
 	
 	# Starting game (com o DOG)
 	def start_game(self) -> None:
@@ -311,6 +329,8 @@ class PlayerInterface(DogPlayerInterface):
 			if self.round_manager.move_type == Move.INITIAL:
 				dict_json = self.round_manager.convert_move_to_dict()
 				self.dog_server_interface.send_move(dict_json)
+				self.__update_gui_local_pack()
+				self.__update_gui_players_names()
 				print('JOGADA INICIAL ENVIADA')
 
 	def receive_move(self, a_move: dict) -> None:
@@ -335,8 +355,15 @@ class PlayerInterface(DogPlayerInterface):
 			# Atualizar placar dos jogadores
 			# Atualizar pack local
 			self.__update_gui_local_pack()
+			self.__update_gui_players_names()
+			self.__update_gui_players_score()
 
-	
+	def __update_gui_players_score(self):
+		local_score = self.round_manager.local_player.score
+		remote_score = self.round_manager.remote_player.score
+		self.scores['remote'].configure(text=f'{str(remote_score)}')
+		self.scores['local'].configure(text=f'{str(local_score)}')
+
 	def __update_gui_local_pack(self):
 		for index, card in enumerate(self.round_manager.local_player.pack.cards):
 			new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
@@ -344,8 +371,10 @@ class PlayerInterface(DogPlayerInterface):
 			print(type(self.local_pack_cards[index]))
 			self.local_pack_cards[index].configure(image=new_image)
 			self.local_pack_cards[index].image = new_image
-
-
+	
+	def __update_gui_players_names(self):
+		self.label_remote_player.configure(text=f'{self.round_manager.remote_player.name}') 
+		self.label_local_player.configure(text=f'{self.round_manager.local_player.name}')
 
 
 	def __status_response_to_dict(self, response: list):

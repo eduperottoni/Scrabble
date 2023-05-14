@@ -1,11 +1,5 @@
 from classes.trie_node import TrieNode
 
-#TODO TEMOS QUE TESTAR ESSA ÁRVORE
-#TODO TEMOS QUE TESTAR ESSA ÁRVORE
-#TODO TEMOS QUE TESTAR ESSA ÁRVORE
-#TODO TEMOS QUE TESTAR ESSA ÁRVORE
-#TODO TEMOS QUE TESTAR ESSA ÁRVORE
-
 class Trie:
     def __init__(self):
         self.__root = TrieNode()
