@@ -53,7 +53,7 @@ class PlayerInterface(DogPlayerInterface):
 			'button(change)': {'btn_description': 'Trocar cards',
 		      				   'btn_position': (20,120)}
 		}
-		self.cards = []
+		self.local_pack_cards = []
 		self.scores = []
 		self.main_frame = Frame(self.window, width=window_size[0], height=window_size[1], relief='raised', bg="green")
 		self.player_frame_height = 1/6*window_size[0]
@@ -98,7 +98,13 @@ class PlayerInterface(DogPlayerInterface):
 		resized_img = pil_img.resize((size, size), Image.ANTIALIAS)
 		tk_img = ImageTk.PhotoImage(resized_img)
 		return tk_img
-		
+	
+	# TODO substituir isso por uma classe ou dicionário que já fique carregado com as imagens
+	# (demora muito ir carregando tudo durante a execução)
+	def __load_card_img(self, letter: str, size: int) -> ImageTk.PhotoImage:
+		RELATIVE_PATH = 'src/images/cards/scrabble'
+		image = self.__load_img(f'{RELATIVE_PATH}_{letter.upper()}.png', int(size)-6)
+		return image
 
 	#Drawing button
 	def __draw_button(self, btn_text: str, width: float, height: float, position: tuple, main_frame: Frame, name: str) -> Button: 
@@ -159,8 +165,9 @@ class PlayerInterface(DogPlayerInterface):
 			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
 				pack_position.place(x=i*card_size, y=5)
 				self.pack_positions.append(pack_position)
-			card = self.__draw_card(new_local_pack_pos, card_size, 'A', 8)
-			self.cards.append(card)
+			card = self.__draw_card(new_local_pack_pos, card_size, 'A')
+			self.local_pack_cards.append(card)
+			print(f'OLHA O LOCAL PACK AÍ : {self.local_pack_cards}')
 	
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
@@ -250,11 +257,8 @@ class PlayerInterface(DogPlayerInterface):
 
 	
 	#draw card (using Label widget)
-	def __draw_card(self, position: Frame, size: int, letter: str, value: int) -> Label:
-		RELATIVE_PATH = 'src/images/cards/scrabble'
-		# label = 
-		
-		image = self.__load_img(f'{RELATIVE_PATH}_{letter.upper()}.png', int(size)-6)
+	def __draw_card(self, position: Frame, size: int, letter: str) -> Label:
+		image = self.__load_card_img(letter, size)
 		card = Label(position, width=size, height=size, image=image, name=f'card({letter})')
 		card = Label(
 					position, 
@@ -270,6 +274,7 @@ class PlayerInterface(DogPlayerInterface):
 			event)
 		)
 		card.pack()
+		return card
 	
 	# Drawing scores (using Canvas widget)
 	def __draw_score(self, main_frame: Frame, size: tuple, position: tuple) -> Canvas:
@@ -312,16 +317,35 @@ class PlayerInterface(DogPlayerInterface):
 		print('JOGADA SENDO RECEBIDA')
 		print(a_move)
 		if a_move['move_type'] == 'INITIAL':
-			# Pega cards distribuídos remotamente
-			# Atualiza interface
+			# Gets cards distribuited remotely
 			print('O tipo de jogada recebida é INITIAL')
 			local_cards = a_move['remote_player']['pack']['cards']
 			letters = [card['letter'] for card in local_cards]
 			self.round_manager.set_local_player_pack(letters)
+			self.round_manager.move_type == Move.INITIAL
+			# Updates user interface
+			self.__update_gui(Move.INITIAL)
 		else:
 			print('O tipo de jogada recebida não é INITIAL')
 		
-		
+	
+	def __update_gui(self, move_type: Move) -> None:
+		if move_type == Move.INITIAL:
+			# Atualizar nomes dos jogadores
+			# Atualizar placar dos jogadores
+			# Atualizar pack local
+			self.__update_gui_local_pack()
+
+	
+	def __update_gui_local_pack(self):
+		for index, card in enumerate(self.round_manager.local_player.pack.cards):
+			new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
+			print(self.local_pack_cards)
+			print(type(self.local_pack_cards[index]))
+			self.local_pack_cards[index].configure(image=new_image)
+			self.local_pack_cards[index].image = new_image
+
+
 
 
 	def __status_response_to_dict(self, response: list):
