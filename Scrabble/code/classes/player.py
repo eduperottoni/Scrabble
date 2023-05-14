@@ -7,8 +7,7 @@ class Player:
         self.__is_turn = False
         self.__score = 0
         self.__dropouts = 0
-        #TODO Criar o atributo pack
-        self.pack = Pack()
+        self.__pack = Pack()
 
     @property
     def id(self):
@@ -30,9 +29,9 @@ class Player:
     def dropouts(self):
         return self.__dropouts
     
-    # @property
-    # def pack(self):
-        # return self.__pack
+    @property
+    def pack(self):
+        return self.__pack
 
     @name.setter
     def name(self, name: str):
@@ -53,10 +52,6 @@ class Player:
     @dropouts.setter
     def dropouts(self, dropouts: int):
         self.__dropouts = dropouts
-
-    # @pack.setter
-    # def pack(self, pack: Pack):
-        # self.__pack = pack
     
     def reset(self) -> None:
         """
@@ -67,6 +62,8 @@ class Player:
         self.__is_turn = False
         self.__score = 0
         self.__dropouts = 0
+        self.__pack = Pack()
+
 
     def initialize(self, id: str, name: str) -> None:
         """

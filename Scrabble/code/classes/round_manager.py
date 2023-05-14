@@ -71,7 +71,6 @@ class RoundManager:
         """
         Method to initialize bag's cards and distribute then to players
         """
-        print('Construindo board')
         remote_cards = self.__board.bag.get_random_cards(7)
         local_cards = self.__board.bag.get_random_cards(7)
         self.local_player.pack.insert_cards(local_cards, [0,1,2,3,4,5,6])
@@ -97,3 +96,13 @@ class RoundManager:
         move['remote_player'] = self.__remote_player.convert_to_json()
         move['local_player'] = self.__local_player.convert_to_json()
         return move
+
+    def set_local_player_pack(self, letters: list):
+        """
+        Sets local player pack (in case the remote made the INITIAL move)
+        """
+        cards = self.__board.bag.get_cards_by_letters(letters)
+        print('PACK DO JOGADOR LOCAL')
+        self.local_player.pack.insert_cards(cards, [0,1,2,3,4,5,6])
+        for card in self.__local_player.pack.cards:
+            print(card.value, card.letter)

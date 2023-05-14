@@ -310,10 +310,17 @@ class PlayerInterface(DogPlayerInterface):
 
 	def receive_move(self, a_move: dict) -> None:
 		print('JOGADA SENDO RECEBIDA')
+		print(a_move)
 		if a_move['move_type'] == 'INITIAL':
 			# Pega cards distribuídos remotamente
 			# Atualiza interface
-			pass
+			print('O tipo de jogada recebida é INITIAL')
+			local_cards = a_move['remote_player']['pack']['cards']
+			letters = [card['letter'] for card in local_cards]
+			self.round_manager.set_local_player_pack(letters)
+		else:
+			print('O tipo de jogada recebida não é INITIAL')
+		
 		
 
 
