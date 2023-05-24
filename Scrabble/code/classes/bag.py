@@ -90,3 +90,14 @@ class Bag:
             cards.append(Card(letter))
             self.__cards_amount_per_letter[letter] -= 1
         return cards
+    
+    def exchange_cards(self, cards: 'list[Card]') -> 'list[Card]':
+        """
+        Increments cards quantity and returns cards randomly selected from bag
+        """
+        exceptions_set = set()
+        for card in cards:
+            exceptions_set.add(card.letter)
+        cards = self.get_random_cards(cards, list(exceptions_set))
+            
+        

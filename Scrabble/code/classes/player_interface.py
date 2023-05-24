@@ -421,3 +421,11 @@ class PlayerInterface(DogPlayerInterface):
 			self.round_manager.reset_game()
 			#TODO pegar game config
 			#TODO chamar o update da GUI
+
+	#TODO implementar método change_cards
+	def change_cards_from_pack():
+		# try:
+		# 	self.RoundManager.change_cards_from_pack()
+		# except:
+		# 	self.__show_message("BAG COM PROBLEMA - NÃO TEM CARDS OU NÃO TEM CARDS SEM EXCEÇÕES")
+		pass
