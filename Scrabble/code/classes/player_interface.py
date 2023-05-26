@@ -349,7 +349,8 @@ class PlayerInterface(DogPlayerInterface):
 			print('O tipo de jogada recebida não é INITIAL')
 		
 	
-	def __update_gui(self, move_type: Move) -> None:
+	def __update_gui(self, move_type: Move = None) -> None:
+		#TODO if move_type == None: get RoundManager.move_type 
 		if move_type == Move.INITIAL:
 			# Atualizar nomes dos jogadores
 			# Atualizar placar dos jogadores
