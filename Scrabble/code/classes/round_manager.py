@@ -11,7 +11,19 @@ class RoundManager:
         self.__board = Board()
         self.__player_interface = None
         self.__move_type = None
+    
+    @property
+    def player_interface(self):
+        return self.__player_interface
+    
+    @player_interface.setter
+    def player_interface(self, interface):
+        self.__player_interface = interface
 
+    @property
+    def board(self) -> Board:
+        return self.__board       
+    
     @property
     def match_state(self) -> State:
         return self.__match_state
@@ -44,6 +56,9 @@ class RoundManager:
     def remote_player(self, remote_player: Player):
         self.__remote_player = remote_player
     
+    def configure_players(self, players: dict) -> None:
+        self.local_player.initialize(players['local']['id'], players['local']['name'])
+        self.remote_player.initialize(players['remote']['id'], players['remote']['name'])
 
     def start_game(self, players: dict) -> None:
         """
@@ -53,19 +68,21 @@ class RoundManager:
                                                     'name': str,
                                                     'turn': True or False}}
         """
-        self.local_player.initialize(players['local']['id'], players['local']['name'])
-        self.remote_player.initialize(players['remote']['id'], players['remote']['name'])
+        self.configure_players(players)
         print(players)
+        self.__match_state = State.IN_PROGRESS
+        print(f'estado do jogo setado como {self.match_state}')
+        self.__move_type = Move.INITIAL
+        print(f'tipo de movimento setado como {self.move_type}')
+        self.__distribute_cards()
         if players['local']['turn']:
             self.local_player.toogle_turn()
             print('VEZ DE JOGAR É DO JOGADOR LOCAL')
-            self.__distribute_cards()
-            self.__match_state = State.IN_PROGRESS
-            self.__move_type = Move.INITIAL
         else:
             self.remote_player.toogle_turn()
             print('VEZ É DO JOGADOR REMOTO')
             self.__match_state = State.WAITING_REMOTE_MOVE
+        print(self.__board.bag)
 
     def __distribute_cards(self):
         """
@@ -84,8 +101,8 @@ class RoundManager:
         :return int: 0 if the operation is invalid, 1 if the operation is valid 
         """
         print(f'Posição selecionada: {coord}')
-        if self.__match_state == State.LOCAL_MOVE:
-            print('Lidando com a lógica do jogo')
+        if self.__match_state == State.IN_PROGRESS:
+            self.player_interface.show_message("Lidando com a lógica do jogo", "teste")
         else:
             self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
 
@@ -97,12 +114,40 @@ class RoundManager:
         move['local_player'] = self.__local_player.convert_to_json()
         return move
 
-    def set_local_player_pack(self, letters: list):
+    def update_player_pack(self, player: Player, letters: 'list[str]', positions: 'list[int]') -> None:
         """
         Sets local player pack (in case the remote made the INITIAL move)
         """
+        print(f'PACK DO JOGADOR {player.name} SENDO ATUALIZADO COM AS LETRAS {letters} NAS POSIÇÕES {positions}')
         cards = self.__board.bag.get_cards_by_letters(letters)
-        print('PACK DO JOGADOR LOCAL')
-        self.local_player.pack.insert_cards(cards, [0,1,2,3,4,5,6])
-        for card in self.__local_player.pack.cards:
-            print(card.value, card.letter)
+        player.pack.insert_cards(cards, positions)
+
+    def select_card_from_pack(self, index: int):
+        """
+        Verify turn and move type and pass the control to pack
+
+        :param index: index of the position of the pack selected in GUI
+        """
+        print(f'CARD SERÁ SELECIONADO -> {self.__local_player.is_turn}')
+        if self.__local_player.is_turn:
+            print('AQUI POSSO JOGAR')
+            if self.move_type != Move.CHANGE:
+                self.move_type = Move.CONSTRUCTION
+            self.proceed_card_selection(index)
+        else: self.__player_interface.show_message(title='Mensagem do DOG', message="CÊ TÁ MALUCO?")
+    
+    def proceed_card_selection(self, index: int):
+        """
+        Proceeds card selection
+
+        :param index: index of the position of the pack clicked in GUI
+        """
+        pack = self.__local_player.pack
+        if self.move_type == Move.CONSTRUCTION:
+            any_selected = pack.any_cards_selected()
+            if any_selected:
+                print('SE NETRAR AQUI, ERRADO')
+                pack.deselect_card(index)
+                self.player_interface.mark_off_card(index)
+            pack.select_card(index)
+            self.player_interface.mark_card(index)

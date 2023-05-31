@@ -80,7 +80,7 @@ class Player:
         """
         Change logically the is_turn attribute (change the turn of the match)
         """
-        self.__is_turn = not self.is_turn
+        self.__is_turn = not self.__is_turn
 
     def convert_to_json(self):
         a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

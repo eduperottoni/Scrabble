@@ -99,5 +99,6 @@ class Bag:
         for card in cards:
             exceptions_set.add(card.letter)
         cards = self.get_random_cards(cards, list(exceptions_set))
-            
-        
+
+    def __str__(self):
+        return str(self.__cards_amount_per_letter)

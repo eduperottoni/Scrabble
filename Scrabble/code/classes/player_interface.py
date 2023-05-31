@@ -29,7 +29,6 @@ class PlayerInterface(DogPlayerInterface):
 			label='Exit game',
 			command=self.window.destroy,
 		)
-		print('Cheguei aqui')
 		self.file_menu.add_command(
 			label='Restart game',
 			command= self.window.destroy,
@@ -170,9 +169,9 @@ class PlayerInterface(DogPlayerInterface):
 			for pack_position in [new_local_pack_pos, new_remote_pack_pos]:
 				pack_position.place(x=i*card_size, y=5)
 				self.pack_positions.append(pack_position)
-			card = self.__draw_card(new_local_pack_pos, card_size, 'A')
-			self.local_pack_cards.append(card)
-			print(f'OLHA O LOCAL PACK AÍ : {self.local_pack_cards}')
+			label = self.__draw_card(new_local_pack_pos, card_size, 'A')
+			label.id = f'local{i}, A'
+			self.local_pack_cards.append(label)
 	
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
@@ -201,16 +200,11 @@ class PlayerInterface(DogPlayerInterface):
 				
 				# We create the Label's image depending on the type o the position
 				dict_key = 'NORMAL'
-				if ((line, column) in tw):
-					dict_key = 'TW'
-				elif ((line, column) in dw):
-					dict_key = 'DW'
-				elif ((line, column) in dl):
-					dict_key = 'DL'
-				elif ((line, column) in tl):
-					dict_key = 'TL'
-				elif ((line, column) == (7,7)):
-					dict_key = '*'
+				if ((line, column) in tw): dict_key = 'TW'
+				elif ((line, column) in dw): dict_key = 'DW'
+				elif ((line, column) in dl): dict_key = 'DL'
+				elif ((line, column) in tl): dict_key = 'TL'
+				elif ((line, column) == (7,7)): dict_key = '*'
 				
 				# Creating Label's image
 				image = self.__load_img(POSITIONS_IMG_DICT[dict_key], int(position_size)-6)		
@@ -264,13 +258,13 @@ class PlayerInterface(DogPlayerInterface):
 	#draw card (using Label widget)
 	def __draw_card(self, position: Frame, size: int, letter: str) -> Label:
 		image = self.__load_card_img(letter, size)
-		card = Label(position, width=size, height=size, image=image, name=f'card({letter})')
+		
 		card = Label(
 					position, 
 					bg='green',
 					image=image,
 					borderwidth=3,
-					name=f'card{letter}'
+					name=f'card {letter}'
 				)
 		card.image = image
 		card.bind(
@@ -317,7 +311,6 @@ class PlayerInterface(DogPlayerInterface):
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 				else:
 					players_response = start_status.get_players()
-					print('PLAYERS_RESPONSE_ABAIXO')
 					print(players_response)
 					# Building player dict and order list to pass as parameter in RoundManager.start_match()
 					players = self.__status_response_to_dict(players_response)
@@ -325,26 +318,42 @@ class PlayerInterface(DogPlayerInterface):
 					self.round_manager.start_game(players)
 					#TODO Não podemos fazer isso, temos que conferir se a partida está em andamento (se foi iniciada) no clique
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
-			print('AQUI O LOG', self.round_manager.move_type)
-			if self.round_manager.move_type == Move.INITIAL:
-				dict_json = self.round_manager.convert_move_to_dict()
-				self.dog_server_interface.send_move(dict_json)
-				self.__update_gui_local_pack()
-				self.__update_gui_players_names()
-				print('JOGADA INICIAL ENVIADA')
+					
+					
+					print('AQUI O LOG', self.round_manager.move_type)
+					dict_json = self.round_manager.convert_move_to_dict()
+					print('='*50)
+					print(dict_json)
+					print('='*50)
+					self.dog_server_interface.send_move(dict_json)
+					print('JOGADA INICIAL ENVIADA')
+					self.__update_gui_local_pack()
+					self.__update_gui_players_names()
+		print(self.round_manager.local_player.is_turn)
+		print(self.round_manager.remote_player.is_turn)
 
 	def receive_move(self, a_move: dict) -> None:
-		print('JOGADA SENDO RECEBIDA')
-		print(a_move)
+		print('='*50)
+		print(f'JOGADA SENDO RECEBIDA = {a_move}')
 		if a_move['move_type'] == 'INITIAL':
 			# Gets cards distribuited remotely
 			print('O tipo de jogada recebida é INITIAL')
 			local_cards = a_move['remote_player']['pack']['cards']
 			letters = [card['letter'] for card in local_cards]
-			self.round_manager.set_local_player_pack(letters)
+			players_dict = {'local': {'id': a_move['remote_player']['id'],
+			     					'name': a_move['remote_player']['name']},
+							'remote': {'id': a_move['local_player']['id'],
+									'name': a_move['local_player']['name']}}
+			self.round_manager.configure_players(players_dict)
+			local_initial_letters = [card['letter'] for card in a_move['remote_player']['pack']['cards']]
+			remote_initial_letters = [card['letter'] for card in a_move['local_player']['pack']['cards']]
+			self.round_manager.update_player_pack(self.round_manager.local_player, local_initial_letters, range(len(local_initial_letters)))
+			self.round_manager.update_player_pack(self.round_manager.remote_player, remote_initial_letters, range(len(remote_initial_letters)))
 			self.round_manager.move_type == Move.INITIAL
 			# Updates user interface
 			self.__update_gui(Move.INITIAL)
+			self.round_manager.state = State.IN_PROGRESS
+			print(self.round_manager.board.bag)
 		else:
 			print('O tipo de jogada recebida não é INITIAL')
 		
@@ -366,13 +375,24 @@ class PlayerInterface(DogPlayerInterface):
 		self.scores['local'].configure(text=f'{str(local_score)}')
 
 	def __update_gui_local_pack(self):
+		#TODO Fazer uma otimização aqui: Por que atualizar tudo se apenas 2 letras mudarem?
 		for index, card in enumerate(self.round_manager.local_player.pack.cards):
 			new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
-			print(self.local_pack_cards)
-			print(type(self.local_pack_cards[index]))
 			self.local_pack_cards[index].configure(image=new_image)
 			self.local_pack_cards[index].image = new_image
+			self.local_pack_cards[index].id = f'local({index}, {card.letter})'
+
+	def mark_card(self, index: int) -> None:
+		"""
+		Just change the color of the background of the Label in local pack
+		"""
+		self.local_pack_cards[index].configure(bg=f'red')
+		
+
+	def mark_off_card(self, index: int) -> None:
+		self.local_pack_cards[index].configure(bg=f'green')
 	
+
 	def __update_gui_players_names(self):
 		self.label_remote_player.configure(text=f'{self.round_manager.remote_player.name}') 
 		self.label_local_player.configure(text=f'{self.round_manager.local_player.name}')
@@ -407,11 +427,18 @@ class PlayerInterface(DogPlayerInterface):
 	def receive_start(self, start_status: StartStatus) -> None:
 		self.reset_game()
 		players_response = start_status.get_players()
-		print('PLAYERS_RESPONSE_ABAIXO')
+		print('RECEBENDO GAME START')
 		print(players_response)
 		players = self.__status_response_to_dict(players_response)
-		self.round_manager.start_game(players)
+		print(players)
+		if players['local']['turn']:
+			#TODO tratar aqui, as vezes nenhum jogador fica com a vez
+			self.round_manager.local_player.toogle_turn()
+		else: self.round_manager.remote_player.toogle_turn()
+		# self.round_manager.start_game(players)
 		message = start_status.get_message()
+		print(self.round_manager.local_player.is_turn)
+		print(self.round_manager.remote_player.is_turn)
 		self.show_message(title='Mensagem do DOG', message=message)
 		#TODO pegar game config
 		#TODO chamar o update da interface
@@ -425,8 +452,14 @@ class PlayerInterface(DogPlayerInterface):
 
 	#TODO implementar método change_cards
 	def change_cards_from_pack():
+
 		# try:
 		# 	self.RoundManager.change_cards_from_pack()
 		# except:
 		# 	self.__show_message("BAG COM PROBLEMA - NÃO TEM CARDS OU NÃO TEM CARDS SEM EXCEÇÕES")
 		pass
+
+	def select_card_from_pack(self, event) -> None:
+		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"
+		print(pack_index)
+		self.round_manager.select_card_from_pack(int(pack_index))
