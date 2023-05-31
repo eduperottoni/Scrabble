@@ -20,7 +20,7 @@ class Word:
     def add_position(self, position: Position):
         self.__positions.append(position)
     
-    def get_min_max_positions(self) -> 'tuple(Position, Positions)':
+    def get_min_max_positions(self) -> 'tuple(Position, Position)':
         """
         Sort the positions array based on the coordinates attribute
 
