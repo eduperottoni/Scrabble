@@ -289,10 +289,6 @@ class PlayerInterface(DogPlayerInterface):
 		new_score.create_window(70, 60, window=label_score, width=int(size[0]/2))
 
 		new_score.place(x=position[0], y=position[1])
-		# label_title.place(x=10, y=5)
-		# label_score.place(x=0, y=0)
-		# new_score.create_text(100, 16, text="PONTUAÇÃO", font=('Arial', 16))
-		# new_score.create_text(100, 50, text="0", font=('Arial', 16))
 		return label_score
 	
 	# Starting game (com o DOG)

@@ -148,11 +148,15 @@ class RoundManager:
         if self.move_type == Move.CONSTRUCTION:
             any_selected = pack.any_cards_selected()
             if any_selected:
+                #TODO pegar o index de quem está selecionado
                 print('SE NETRAR AQUI, ERRADO')
                 pack.deselect_card(index)
                 self.player_interface.mark_off_card(index)
-            pack.select_card(index)
-            self.player_interface.mark_card(index)
+                print(self.local_player.pack.current_selected_cards)
+            else:
+                pack.select_card(index)
+                print(self.local_player.pack.current_selected_cards[0].letter)
+                self.player_interface.mark_card(index)
 
     def receive_move(self, move_type: Move, move_dict: dict):
         if move_type == Move.INITIAL:

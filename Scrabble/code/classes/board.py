@@ -7,6 +7,8 @@ class Board:
     def __init__(self):
         self.__bag = Bag(CARDS_QUANTITY_BY_LETTER)
         self.__dictionary = Dictionary()
+        print(self.__dictionary.search_word('xicara'))
+        print(self.__dictionary.search_word('xyz'))
         self.__current_word = []
         # self.__premium_spots = [] # premium_spots = [('A', 'TLS'), ('B', 'DLS'), ('C', 'DLS'), ('D', 'DWS'), ('E', 'TLS')]
         # self.__current_adjacent_words_dict = {}
