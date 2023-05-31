@@ -81,9 +81,18 @@ class Player:
         Change logically the is_turn attribute (change the turn of the match)
         """
         self.__is_turn = not self.__is_turn
+        print(f"MODIFICANDO ATRIBUTO TURN DO PLAYER {self.__name} PARA {self.__is_turn}")
 
     def convert_to_json(self):
         a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
         json_string = a.replace("'", "\"").replace('_Pack__', '').replace('_Card__', '').replace('_Player__', '')
         _json = json.loads(json_string)
         return _json
+
+    def __str__(self):
+        string = ""
+        string += f'==== Player {self.__id} ====\n'
+        string += f'{self.__name}\n'
+        string += f'{self.__is_turn}\n'
+        string += f'=============================='
+        return string

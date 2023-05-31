@@ -76,8 +76,8 @@ class RoundManager:
         print(f'tipo de movimento setado como {self.move_type}')
         self.__distribute_cards()
         if players['local']['turn']:
-            self.local_player.toogle_turn()
             print('VEZ DE JOGAR É DO JOGADOR LOCAL')
+            self.local_player.toogle_turn()
         else:
             self.remote_player.toogle_turn()
             print('VEZ É DO JOGADOR REMOTO')
@@ -128,9 +128,11 @@ class RoundManager:
 
         :param index: index of the position of the pack selected in GUI
         """
-        print(f'CARD SERÁ SELECIONADO -> {self.__local_player.is_turn}')
+        print('LOCAL')
+        print(self.__local_player)
+        print('REMOTE')
+        print(self.__remote_player)
         if self.__local_player.is_turn:
-            print('AQUI POSSO JOGAR')
             if self.move_type != Move.CHANGE:
                 self.move_type = Move.CONSTRUCTION
             self.proceed_card_selection(index)
@@ -151,3 +153,16 @@ class RoundManager:
                 self.player_interface.mark_off_card(index)
             pack.select_card(index)
             self.player_interface.mark_card(index)
+
+    def receive_move(self, move_type: Move, move_dict: dict):
+        if move_type == Move.INITIAL:
+            # Gets cards distribuited remotely and updates local instances
+            print('O tipo de jogada recebida é INITIAL')
+            local_initial_letters = [card['letter'] for card in move_dict['remote_player']['pack']['cards']]
+            remote_initial_letters = [card['letter'] for card in move_dict['local_player']['pack']['cards']]
+            self.update_player_pack(self.local_player, local_initial_letters, range(len(local_initial_letters)))
+            self.update_player_pack(self.remote_player, remote_initial_letters, range(len(remote_initial_letters)))
+            # Updates state and move type
+            self.move_type == Move.INITIAL
+            self.state = State.IN_PROGRESS
+            print(self.board.bag)

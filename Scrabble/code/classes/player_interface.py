@@ -336,24 +336,10 @@ class PlayerInterface(DogPlayerInterface):
 		print('='*50)
 		print(f'JOGADA SENDO RECEBIDA = {a_move}')
 		if a_move['move_type'] == 'INITIAL':
-			# Gets cards distribuited remotely
-			print('O tipo de jogada recebida é INITIAL')
-			local_cards = a_move['remote_player']['pack']['cards']
-			letters = [card['letter'] for card in local_cards]
-			players_dict = {'local': {'id': a_move['remote_player']['id'],
-			     					'name': a_move['remote_player']['name']},
-							'remote': {'id': a_move['local_player']['id'],
-									'name': a_move['local_player']['name']}}
-			self.round_manager.configure_players(players_dict)
-			local_initial_letters = [card['letter'] for card in a_move['remote_player']['pack']['cards']]
-			remote_initial_letters = [card['letter'] for card in a_move['local_player']['pack']['cards']]
-			self.round_manager.update_player_pack(self.round_manager.local_player, local_initial_letters, range(len(local_initial_letters)))
-			self.round_manager.update_player_pack(self.round_manager.remote_player, remote_initial_letters, range(len(remote_initial_letters)))
-			self.round_manager.move_type == Move.INITIAL
+			# Passthe control to the round manager
+			self.round_manager.receive_move(Move.INITIAL, a_move)
 			# Updates user interface
 			self.__update_gui(Move.INITIAL)
-			self.round_manager.state = State.IN_PROGRESS
-			print(self.round_manager.board.bag)
 		else:
 			print('O tipo de jogada recebida não é INITIAL')
 		
@@ -428,13 +414,17 @@ class PlayerInterface(DogPlayerInterface):
 		self.reset_game()
 		players_response = start_status.get_players()
 		print('RECEBENDO GAME START')
-		print(players_response)
 		players = self.__status_response_to_dict(players_response)
-		print(players)
+		print(players_response)
+		print(players['local']['turn'])
+		self.round_manager.configure_players(players)
 		if players['local']['turn']:
+			print('VEZ DO JOGADOR LOCAL')
 			#TODO tratar aqui, as vezes nenhum jogador fica com a vez
 			self.round_manager.local_player.toogle_turn()
-		else: self.round_manager.remote_player.toogle_turn()
+		else:
+			print('VEZ DO JOGADOR REMOTO')
+			self.round_manager.remote_player.toogle_turn()
 		# self.round_manager.start_game(players)
 		message = start_status.get_message()
 		print(self.round_manager.local_player.is_turn)
