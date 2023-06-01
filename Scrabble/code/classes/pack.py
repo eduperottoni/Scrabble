@@ -1,7 +1,7 @@
 from classes.exceptions import PositionAlreadyHasCardException
 from classes.exceptions import PositionDoesNotHaveCardException
 from classes.exceptions import CardNotSelectedException
-
+from classes.card import Card
 class Pack:
     def __init__(self):
         self.__cards = [None for _ in range(7)]
@@ -45,6 +45,15 @@ class Pack:
 
     def count_cards(self) -> int:
         return len(self.__cards)
+    
+    def deselect_all_cards(self) -> None:
+        self.__current_selected_cards = []
+    
+    def get_selected_card_index(self) -> int:
+        return self.__cards.index(self.__current_selected_cards[0])
+    
+    
+
     
     # Just to make tests
     # def __str__(self):

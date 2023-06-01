@@ -46,7 +46,7 @@ class RoundManager:
     
     @match_state.setter
     def match_state(self, match_state: State) -> None:
-        self.match_state = match_state
+        self.__match_state = match_state
 
     @local_player.setter
     def local_player(self, local_player: Player):
@@ -101,8 +101,26 @@ class RoundManager:
         :return int: 0 if the operation is invalid, 1 if the operation is valid 
         """
         print(f'Posição selecionada: {coord}')
-        if self.__match_state == State.IN_PROGRESS:
-            self.player_interface.show_message("Lidando com a lógica do jogo", "teste")
+        print(f'Estado do round-manager: {self.__match_state}')
+        if self.local_player.is_turn:
+            if self.move_type == Move.CONSTRUCTION:
+                if self.local_player.pack.any_cards_selected:
+                    print(coord[0], coord[1])
+                    print(len(self.board.positions))
+                    position = self.board.positions[coord[0]][coord[1]]
+                    card = self.local_player.pack.current_selected_cards[0]
+                    if position.is_enabled:
+                        print('POSIÇÃO ESTÁ LIVRE')
+                        self.player_interface.update_gui_board_position((coord[0], coord[1]), card.letter)
+                        # DESABILITAR POSIÇÃO DO TABULEIRO
+                        # LIMPAR POSIÇÃO DO PACK E DESABILITÁ-LA
+                        # 
+                    else:
+                        self.player_interface.show_message("")
+                else:
+                    self.player_interface.show_message("")
+            else:
+                self.player_interface.show_message("")
         else:
             self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
 
@@ -148,15 +166,15 @@ class RoundManager:
         if self.move_type == Move.CONSTRUCTION:
             any_selected = pack.any_cards_selected()
             if any_selected:
-                #TODO pegar o index de quem está selecionado
-                print('SE NETRAR AQUI, ERRADO')
-                pack.deselect_card(index)
-                self.player_interface.mark_off_card(index)
+                # Gets the current selected card index
+                selected_index = pack.get_selected_card_index()
+                pack.deselect_all_cards()
+                self.player_interface.mark_off_card(selected_index)
                 print(self.local_player.pack.current_selected_cards)
-            else:
-                pack.select_card(index)
-                print(self.local_player.pack.current_selected_cards[0].letter)
-                self.player_interface.mark_card(index)
+            # Selects the card
+            pack.select_card(index)
+            print(self.local_player.pack.current_selected_cards[0].letter)
+            self.player_interface.mark_card(index)
 
     def receive_move(self, move_type: Move, move_dict: dict):
         if move_type == Move.INITIAL:

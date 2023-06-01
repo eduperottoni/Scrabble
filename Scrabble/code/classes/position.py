@@ -28,3 +28,27 @@ class Position:
 
     def disable(self) -> None:
         self.__is_enabled = False
+
+class SpecialPosition(Position):
+    def __init__(self):
+        super().__init__()
+
+class NormalPosition(Position):
+    def __init__(self):
+        super().__init__()
+
+class DWPosition(SpecialPosition):
+    def __init__(self):
+        super().__init__()
+
+class DLPosition(SpecialPosition):
+    def __init__(self):
+        super().__init__()
+
+class TLPosition(SpecialPosition):
+    def __init__(self):
+        super().__init__()
+
+class TWPosition(SpecialPosition):
+    def __init__(self):
+        super().__init__()

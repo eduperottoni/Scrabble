@@ -338,7 +338,6 @@ class PlayerInterface(DogPlayerInterface):
 			self.__update_gui(Move.INITIAL)
 		else:
 			print('O tipo de jogada recebida não é INITIAL')
-		
 	
 	def __update_gui(self, move_type: Move = None) -> None:
 		#TODO if move_type == None: get RoundManager.move_type 
@@ -356,6 +355,11 @@ class PlayerInterface(DogPlayerInterface):
 		self.scores['remote'].configure(text=f'{str(remote_score)}')
 		self.scores['local'].configure(text=f'{str(local_score)}')
 
+	def update_gui_board_position(self, coord: tuple, letter: str):
+		new_image = self.__load_card_img(letter, self.board_size/self.board_side)
+		self.board_positions[coord[0]][coord[1]].configure(image=new_image)
+		self.board_positions[coord[0]][coord[1]].image = new_image
+		
 	def __update_gui_local_pack(self):
 		#TODO Fazer uma otimização aqui: Por que atualizar tudo se apenas 2 letras mudarem?
 		for index, card in enumerate(self.round_manager.local_player.pack.cards):
@@ -381,6 +385,7 @@ class PlayerInterface(DogPlayerInterface):
 
 
 	def __status_response_to_dict(self, response: list):
+		print(response)
 		dict = {'local': 
 					{'id': response[0][1],
 					'name': response[0][0],
@@ -418,9 +423,11 @@ class PlayerInterface(DogPlayerInterface):
 			print('VEZ DO JOGADOR LOCAL')
 			#TODO tratar aqui, as vezes nenhum jogador fica com a vez
 			self.round_manager.local_player.toogle_turn()
+			self.round_manager.match_state = State.IN_PROGRESS
 		else:
 			print('VEZ DO JOGADOR REMOTO')
 			self.round_manager.remote_player.toogle_turn()
+			self.round_manager.match_state = State.WAITING_REMOTE_MOVE
 		# self.round_manager.start_game(players)
 		message = start_status.get_message()
 		print(self.round_manager.local_player.is_turn)
@@ -438,7 +445,6 @@ class PlayerInterface(DogPlayerInterface):
 
 	#TODO implementar método change_cards
 	def change_cards_from_pack():
-
 		# try:
 		# 	self.RoundManager.change_cards_from_pack()
 		# except:
