@@ -1,4 +1,5 @@
 from classes.bag import Bag
+from classes.word import Word
 from classes.dictionary import Dictionary
 from constants.cards import CARDS_QUANTITY_BY_LETTER
 from constants.measures import BOARD_SIDE
@@ -10,7 +11,7 @@ class Board:
         self.__dictionary = Dictionary()
         print(self.__dictionary.search_word('xicara'))
         print(self.__dictionary.search_word('xyz'))
-        self.__current_word = []
+        self.__current_word = Word()
         self.__positions = []
         # self.__premium_spots = [] # premium_spots = [('A', 'TLS'), ('B', 'DLS'), ('C', 'DLS'), ('D', 'DWS'), ('E', 'TLS')]
         # self.__current_adjacent_words_dict = {}

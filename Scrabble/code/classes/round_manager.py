@@ -105,18 +105,21 @@ class RoundManager:
         if self.local_player.is_turn:
             if self.move_type == Move.CONSTRUCTION:
                 if self.local_player.pack.any_cards_selected:
+                    print(f'TEMOS ALGUM CARD SELECIONADO -> {self.local_player.pack.any_cards_selected()}')
                     print(coord[0], coord[1])
-                    print(len(self.board.positions))
                     position = self.board.positions[coord[0]][coord[1]]
                     card = self.local_player.pack.current_selected_cards[0]
                     if position.is_enabled:
                         self.player_interface.update_gui_board_position((coord[0], coord[1]), card.letter)
                         # DESABILITAR POSIÇÃO DO TABULEIRO
+                        position.card = card
                         position.disable()
+                        self.board.current_word.add_position(position)
                         # LIMPAR POSIÇÃO DO PACK E DESABILITÁ-LA
                         indexes = self.local_player.pack.remove_selected_cards()
                         self.player_interface.update_gui_local_pack(indexes)
                         #ADICIONAR CARD SELECTED NA WORD
+
                     else:
                         self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
                 else:

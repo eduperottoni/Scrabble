@@ -58,9 +58,9 @@ class Pack:
             index = self.__cards.index(card)
             card.self_disable()
             self.__cards[index] = None
-            indexes.append(indexes)
+            indexes.append(index)
             print(f'REMOVENDO CARDS DO ÍNDICE {index}')
-        #LIMPAR ATTR CURRENT SELECTED
+        self.__current_selected_cards = []
         print(self.__current_selected_cards)
         print(self.__cards)
         return indexes

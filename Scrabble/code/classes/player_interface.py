@@ -323,7 +323,7 @@ class PlayerInterface(DogPlayerInterface):
 					print('='*50)
 					self.dog_server_interface.send_move(dict_json)
 					print('JOGADA INICIAL ENVIADA')
-					self.__update_gui_local_pack()
+					self.update_gui_local_pack()
 					self.__update_gui_players_names()
 		print(self.round_manager.local_player.is_turn)
 		print(self.round_manager.remote_player.is_turn)
@@ -345,7 +345,7 @@ class PlayerInterface(DogPlayerInterface):
 			# Atualizar nomes dos jogadores
 			# Atualizar placar dos jogadores
 			# Atualizar pack local
-			self.__update_gui_local_pack()
+			self.update_gui_local_pack()
 			self.__update_gui_players_names()
 			self.__update_gui_players_score()
 
@@ -360,7 +360,7 @@ class PlayerInterface(DogPlayerInterface):
 		self.board_positions[coord[0]][coord[1]].configure(image=new_image)
 		self.board_positions[coord[0]][coord[1]].image = new_image
 		
-	def __update_gui_local_pack(self, indexes : 'list[int]' = None):
+	def update_gui_local_pack(self, indexes : 'list[int]' = None):
 		#TODO Fazer uma otimização aqui: Por que atualizar tudo se apenas 2 letras mudarem?
 		if indexes:
 			for index in indexes:
@@ -368,6 +368,7 @@ class PlayerInterface(DogPlayerInterface):
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
 				self.local_pack_cards[index].id = f'local({index}, NORMAL)'
+				self.mark_off_card(index)
 		else:
 			for index, card in enumerate(self.round_manager.local_player.pack.cards):
 				new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
