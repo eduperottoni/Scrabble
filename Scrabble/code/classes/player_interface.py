@@ -360,13 +360,20 @@ class PlayerInterface(DogPlayerInterface):
 		self.board_positions[coord[0]][coord[1]].configure(image=new_image)
 		self.board_positions[coord[0]][coord[1]].image = new_image
 		
-	def __update_gui_local_pack(self):
+	def __update_gui_local_pack(self, indexes : 'list[int]' = None):
 		#TODO Fazer uma otimização aqui: Por que atualizar tudo se apenas 2 letras mudarem?
-		for index, card in enumerate(self.round_manager.local_player.pack.cards):
-			new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
-			self.local_pack_cards[index].configure(image=new_image)
-			self.local_pack_cards[index].image = new_image
-			self.local_pack_cards[index].id = f'local({index}, {card.letter})'
+		if indexes:
+			for index in indexes:
+				new_image = self.__load_card_img('NORMAL', self.board_size/self.board_side)
+				self.local_pack_cards[index].configure(image=new_image)
+				self.local_pack_cards[index].image = new_image
+				self.local_pack_cards[index].id = f'local({index}, NORMAL)'
+		else:
+			for index, card in enumerate(self.round_manager.local_player.pack.cards):
+				new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
+				self.local_pack_cards[index].configure(image=new_image)
+				self.local_pack_cards[index].image = new_image
+				self.local_pack_cards[index].id = f'local({index}, {card.letter})'
 
 	def mark_card(self, index: int) -> None:
 		"""

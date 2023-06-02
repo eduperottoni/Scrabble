@@ -52,11 +52,19 @@ class Pack:
     def get_selected_card_index(self) -> int:
         return self.__cards.index(self.__current_selected_cards[0])
 
-    def remove_selected_card(self) -> None:
-        index = self.__cards.index(self.__current_selected_cards[0])
-
-        self.__cards[index] = None
-        self.__current_selected_cards[0].self_disable()
+    def remove_selected_cards(self) -> 'list[int]':
+        indexes = []
+        for card in self.__current_selected_cards:
+            index = self.__cards.index(card)
+            card.self_disable()
+            self.__cards[index] = None
+            indexes.append(indexes)
+            print(f'REMOVENDO CARDS DO ÍNDICE {index}')
+        #LIMPAR ATTR CURRENT SELECTED
+        print(self.__current_selected_cards)
+        print(self.__cards)
+        return indexes
+        
 
 
     # Just to make tests

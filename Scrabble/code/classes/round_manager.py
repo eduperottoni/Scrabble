@@ -110,12 +110,13 @@ class RoundManager:
                     position = self.board.positions[coord[0]][coord[1]]
                     card = self.local_player.pack.current_selected_cards[0]
                     if position.is_enabled:
-                        print('POSIÇÃO ESTÁ LIVRE')
                         self.player_interface.update_gui_board_position((coord[0], coord[1]), card.letter)
                         # DESABILITAR POSIÇÃO DO TABULEIRO
                         position.disable()
                         # LIMPAR POSIÇÃO DO PACK E DESABILITÁ-LA
-                        self.local_player.pack.remove_selected_card(card)
+                        indexes = self.local_player.pack.remove_selected_cards()
+                        self.player_interface.update_gui_local_pack(indexes)
+                        #ADICIONAR CARD SELECTED NA WORD
                     else:
                         self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
                 else:
