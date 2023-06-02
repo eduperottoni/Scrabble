@@ -123,8 +123,6 @@ class RoundManager:
                         # adicionando a posição na currrent word
                         self.board.current_word.add_position(position)
                         palavra = self.board.current_word.get_string()
-                        print("111111111111111111111111111111111111111111111111111")
-                        print(palavra)
                     else:
                         self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
                 else:

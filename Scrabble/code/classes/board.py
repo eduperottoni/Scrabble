@@ -12,6 +12,16 @@ class Board:
         print(self.__dictionary.search_word('xicara'))
         print(self.__dictionary.search_word('xyz'))
         self.__current_word = Word()
+
+        '''
+        This attribute is a dictionary with the following structure:
+        {(0,0) : {'horizontal': <WORD_IN_0,0_HORIZONTAL>,
+                    'vertical': <WORD_IN_0,0_VERTICAL>},
+        (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
+                    'vertical': <WORD_IN_0,1_VERTICAL>}}
+        '''
+        self.__valid_words_search_dict = {}
+
         self.__positions = []
         self.__first_word = False
         # self.__premium_spots = [] # premium_spots = [('A', 'TLS'), ('B', 'DLS'), ('C', 'DLS'), ('D', 'DWS'), ('E', 'TLS')]
@@ -24,11 +34,11 @@ class Board:
         for line in range(BOARD_SIDE):
             positions_line = []
             for column in range(BOARD_SIDE):
-                position = NormalPosition((line, column))
-                if ((line, column) in tw): position = TWPosition((line, column))
-                elif ((line, column) in dw): position = DWPosition((line, column))
-                elif ((line, column) in dl): position = DLPosition((line, column))
-                elif ((line, column) in tl): position = TLPosition((line, column))
+                position = NormalPosition((column, line))
+                if ((line, column) in tw): position = TWPosition((column, line))
+                elif ((line, column) in dw): position = DWPosition((column, line))
+                elif ((line, column) in dl): position = DLPosition((column, line))
+                elif ((line, column) in tl): position = TLPosition((column, line))
                 positions_line.append(position)
             self.__positions.append(positions_line)
 
@@ -43,6 +53,10 @@ class Board:
     @property
     def current_word(self):
         return self.__current_word
+    
+    @property
+    def valid_words_search_dict(self):
+        return self.__valid_words_search_dict
     
     @property
     def first_word(self):
@@ -119,9 +133,17 @@ class Board:
         aux = self.verify_current_word_same_line_or_column()
         direction = aux[1]
         if direction != None:
-            print(f"A PALAVRA ESTÁ na {aux[1]}")
+            print(f"A PALAVRA ESTÁ NA {aux[1]}")
             self.current_word.direction = direction
-            self.current_word.get_min_max_positions()
+            max_min_positions = self.current_word.get_min_max_positions()
+            min_position = max_min_positions[0]
+            max_position = max_min_positions[1]
+            fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
+            print(f"fill: {fill}")
+            if not fill:
+                print("PALAVRA NÃO ESTÁ CONECTADA")
+            else:
+                print("PALAVRA ESTÁ CONECTADA")
 
             return True
         return False
@@ -159,22 +181,57 @@ class Board:
                 same_line = position.coordinate[0] - line
 
                 if same_line == 0:
-                    direction = 'horizontal'
+                    direction = 'vertical'
                 else:
                     same_column = position.coordinate[1] - column
 
                     if same_column == 0:
-                        direction = 'vertical'
+                        direction = 'horizontal'
                     else:
                         return (False, None)
             # entra aqui em todas as outras posições
             else:
-                if direction == 'horizontal':
+                if direction == 'vertical':
                     if (position.coordinate[0] - line) != 0:
                         return (False, None)
 
-                if direction == 'vertical':
+                if direction == 'horizontal':
                     if (position.coordinate[1] - column) != 0:
                         return (False, None)
 
         return (True, direction)
+    
+    def verify_positions_filling(self, min_position: tuple, max_position: tuple) -> bool:
+        print(min_position, max_position)
+
+        all_coords = self.generate_coords(min_coord=min_position, max_coord=max_position, direction=self.current_word.direction)
+
+        for coord in all_coords:
+            position = self.get_position(board_coord=coord)
+
+            if position.is_enabled:
+                return False
+            else:
+                self.__current_word.add_position(position)
+
+        return True
+    
+    def get_position(self, board_coord: tuple):
+        return self.__positions[board_coord[1]][board_coord[0]]
+
+    def generate_coords(self, min_coord: tuple, max_coord: tuple, direction: str) -> list:
+        """
+        Gets the min and max coordinates and generate the full range of the coordinates
+        """
+
+        coords = []
+
+        if direction == 'horizontal':
+            for x in range(min_coord[0], max_coord[0]+1):
+                coords.append((x, max_coord[1]))
+
+        elif direction == 'vertical':
+            for y in range(min_coord[1], max_coord[1]+1):
+                coords.append((min_coord[0], y))
+        
+        return coords

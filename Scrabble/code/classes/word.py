@@ -15,8 +15,12 @@ class Word:
 
     @direction.setter
     def direction(self, direction: str):
-        self.__direction = direction    
+        self.__direction = direction
     
+    @positions.setter
+    def positions(self, positions: list):
+        self.__positions = positions
+
     def add_position(self, position: Position):
         self.__positions.append(position)
     
@@ -25,13 +29,12 @@ class Word:
         Sort the positions array based on the coordinates attribute
 
         :returns tuple<Position, Position>: 
-        """
-        
-        self.__positions = sorted(self.__positions, key=lambda position: position.coordinate[0] if self.__direction == "horizontal" else position.coordinate[1])
+        """  
+        self.__positions = sorted(self.positions, key=lambda position: position.coordinate[0] if self.__direction == "horizontal" else position.coordinate[1])
         min_position = self.positions[0]
         max_position = self.positions[-1]
 
-        print(f"A POSIÇÃO MAX É: {max_position.card.letter}, e a posição MIN é {min_position.card.letter}")
+        print(f"A POSIÇÃO MAX É: {max_position.coordinate}, e a posição MIN é {min_position.coordinate}")
 
         return (min_position, max_position)
 
