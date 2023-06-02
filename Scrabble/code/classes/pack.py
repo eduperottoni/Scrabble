@@ -30,14 +30,14 @@ class Pack:
         if self.__cards[index] == None: raise PositionDoesNotHaveCardException
         else: 
             self.__cards[index].self_select()
-            self.current_selected_cards.append(self.cards[index])
+            self.__current_selected_cards.append(self.__cards[index])
 
     def deselect_card(self, index: int) -> None:
         if self.__cards[index] == None: raise PositionDoesNotHaveCardException
         elif not self.__cards[index].selected : raise CardNotSelectedException
         else: 
             self.__cards[index].self_unselect()
-            self.current_selected_cards.remove(self.__cards[index])
+            self.__current_selected_cards.remove(self.__cards[index])
 
     def reset(self):
         self.__cards = [None for _ in range(7)]
@@ -51,10 +51,14 @@ class Pack:
     
     def get_selected_card_index(self) -> int:
         return self.__cards.index(self.__current_selected_cards[0])
-    
-    
 
-    
+    def remove_selected_card(self) -> None:
+        index = self.__cards.index(self.__current_selected_cards[0])
+
+        self.__cards[index] = None
+        self.__current_selected_cards[0].self_disable()
+
+
     # Just to make tests
     # def __str__(self):
     #     string = ''

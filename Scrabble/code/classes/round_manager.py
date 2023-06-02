@@ -113,14 +113,15 @@ class RoundManager:
                         print('POSIÇÃO ESTÁ LIVRE')
                         self.player_interface.update_gui_board_position((coord[0], coord[1]), card.letter)
                         # DESABILITAR POSIÇÃO DO TABULEIRO
+                        position.disable()
                         # LIMPAR POSIÇÃO DO PACK E DESABILITÁ-LA
-                        # 
+                        self.local_player.pack.remove_selected_card(card)
                     else:
-                        self.player_interface.show_message("")
+                        self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
                 else:
-                    self.player_interface.show_message("")
+                    self.player_interface.show_message("", "")
             else:
-                self.player_interface.show_message("")
+                self.player_interface.show_message("", "")
         else:
             self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
 
