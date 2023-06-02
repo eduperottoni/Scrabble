@@ -111,15 +111,20 @@ class RoundManager:
                     card = self.local_player.pack.current_selected_cards[0]
                     if position.is_enabled:
                         self.player_interface.update_gui_board_position((coord[0], coord[1]), card.letter)
-                        # DESABILITAR POSIÇÃO DO TABULEIRO
+                        
+                        # desabilita o card do board pra não poder mais adicionar lá
                         position.card = card
                         position.disable()
-                        self.board.current_word.add_position(position)
-                        # LIMPAR POSIÇÃO DO PACK E DESABILITÁ-LA
+
+                        # limpa e desabilita o card do pack
                         indexes = self.local_player.pack.remove_selected_cards()
                         self.player_interface.update_gui_local_pack(indexes)
-                        #ADICIONAR CARD SELECTED NA WORD
 
+                        # adicionando a posição na currrent word
+                        self.board.current_word.add_position(position)
+                        palavra = self.board.current_word.get_string()
+                        print("111111111111111111111111111111111111111111111111111")
+                        print(palavra)
                     else:
                         self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
                 else:
@@ -193,3 +198,36 @@ class RoundManager:
             self.move_type == Move.INITIAL
             self.state = State.IN_PROGRESS
             print(self.board.bag)
+    
+    def submit_word(self):
+        print("COMEÇANDO O SUBMIT WORD")
+
+        if self.move_type == Move.CONSTRUCTION:
+            print("CONSTRUCTION MOVE")
+            if not self.board.first_word:
+                # valida regras especiais da primeira palavra
+                if self.board.verify_first_word_rules():
+                    # seta no board que a primeira palavra agora foi criada
+                    self.board.first_word_created()
+
+                    # valida regras gerais da palavra
+                    if self.board.verify_valid_word():
+                        self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
+                    else:
+                        self.__player_interface.show_message(title='Palavra inválida', message="Palavra inválida (por enquanto)!")
+
+                else:
+                    # retornar os cards pro pack
+                    self.__player_interface.show_message(title='Palavra inválida', message="A palavra não respeita as regras de primeira palavra!")
+                    
+            else:
+                # retornar os cards pro pack
+                self.__player_interface.show_message(title='Palavra inválida', message="A palavra não respeita as regras!")
+            
+
+                
+            
+        else:
+            print("NOT CONSTRUCTION MOVE")
+            self.__player_interface.show_message(title='Jogada inválida', message="Jogada inválida, é preciso formar uma palavra para submetê-la!")
+            

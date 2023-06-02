@@ -1,8 +1,8 @@
 from classes.card import Card
 
 class Position:
-    def __init__(self):
-        self.__coordinate = ()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        self.__coordinate = coordinate
         self.__card = None
         self.__is_enabled = True
 
@@ -30,25 +30,25 @@ class Position:
         self.__is_enabled = False
 
 class SpecialPosition(Position):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        super().__init__(coordinate)
 
 class NormalPosition(Position):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        super().__init__(coordinate)
 
 class DWPosition(SpecialPosition):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        super().__init__(coordinate)
 
 class DLPosition(SpecialPosition):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        super().__init__(coordinate)
 
 class TLPosition(SpecialPosition):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        super().__init__(coordinate)
 
 class TWPosition(SpecialPosition):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, coordinate: 'tuple(int, int)'):
+        super().__init__(coordinate)

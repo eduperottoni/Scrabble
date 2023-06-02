@@ -13,6 +13,7 @@ class Board:
         print(self.__dictionary.search_word('xyz'))
         self.__current_word = Word()
         self.__positions = []
+        self.__first_word = False
         # self.__premium_spots = [] # premium_spots = [('A', 'TLS'), ('B', 'DLS'), ('C', 'DLS'), ('D', 'DWS'), ('E', 'TLS')]
         # self.__current_adjacent_words_dict = {}
         # TODO colocar essas listas como constantes, visto que também são utilizadas para a interface
@@ -23,11 +24,11 @@ class Board:
         for line in range(BOARD_SIDE):
             positions_line = []
             for column in range(BOARD_SIDE):
-                position = NormalPosition()
-                if ((line, column) in tw): position = TWPosition()
-                elif ((line, column) in dw): position = DWPosition()
-                elif ((line, column) in dl): position = DLPosition()
-                elif ((line, column) in tl): position = TLPosition()
+                position = NormalPosition((line, column))
+                if ((line, column) in tw): position = TWPosition((line, column))
+                elif ((line, column) in dw): position = DWPosition((line, column))
+                elif ((line, column) in dl): position = DLPosition((line, column))
+                elif ((line, column) in tl): position = TLPosition((line, column))
                 positions_line.append(position)
             self.__positions.append(positions_line)
 
@@ -44,6 +45,10 @@ class Board:
         return self.__current_word
     
     @property
+    def first_word(self):
+        return self.__first_word
+
+    @property
     def premium_spots(self):
         return self.__premium_spots
     
@@ -51,6 +56,9 @@ class Board:
     def current_adjacent_words_dict(self):
         return self.__current_adjacent_words_dict
     
+    def first_word_created(self):
+        self.__first_word = True
+
     def calculate_player_score(self):
         word = self.__current_word
         word_multiply_const = 1
@@ -72,5 +80,101 @@ class Board:
         #         word_score *= 2
         # self.player.increase_score(word_score)
 
+    def verify_first_word_rules(self):
+        print("VERIFICANDO AS REGRAS DA PRIMEIRA PALAVRA")
+
+        # verificar se há um card no centro do tabuleiro
+        card_in_center = False
+        for position in self.__current_word.positions:
+            print(position.coordinate)
+            if position.coordinate == (7, 7):
+                print("EXISTE UM CARD NO CENTRO")
+                card_in_center = True
+                break
     
+        more_then_one_card = True if len(self.__current_word.positions) > 1 else False
+
+        if more_then_one_card and card_in_center:
+            print("TODAS AS REGRAS DE 1 PALAVRA FORAM RESPEITADAS")
+            return True
+        else:
+            print("AS REGRAS DE PRIMEIRA PALAVRA NÃO FORAM RESPEITADAS")
+            return False
     
+    def verify_valid_word(self):
+        print("VERIFICANDO AS REGRAS GERAIS DA PALAVRA!")
+
+        connected = self.verify_connected_positions()
+        self.determine_adjacent_words()
+        valid = self.verify_words_existance_and_validity()
+
+        if connected and valid:
+            return True
+        else:
+            return False
+
+    def verify_connected_positions(self):
+        print("VERIFICANDO CONEXÃO DOS CARDS DA PALAVRA")
+
+        aux = self.verify_current_word_same_line_or_column()
+        direction = aux[1]
+        if direction != None:
+            print(f"A PALAVRA ESTÁ na {aux[1]}")
+            self.current_word.direction = direction
+            self.current_word.get_min_max_positions()
+
+            return True
+        return False
+    
+    def determine_adjacent_words(self):
+        print("determine_adjacent_words")
+    
+        return False
+
+    def verify_words_existance_and_validity(self):
+        print("verify_words_existance_and_validity")
+
+        return False
+    
+    def verify_current_word_same_line_or_column(self):
+        """
+        Called whenever a submission of word is running
+        Returns if the current word's cards are positioned in same line or column in the board
+        """
+        word = self.current_word
+        line = None
+        column = None
+        direction = None
+
+        for position in word.positions:
+            x = position.coordinate[0]
+            y = position.coordinate[1]
+
+            # só entra aqui na primeira posição
+            if line == None:
+                line = x
+                column = y
+            # só entra aqui na segunda posição
+            elif direction == None:
+                same_line = position.coordinate[0] - line
+
+                if same_line == 0:
+                    direction = 'horizontal'
+                else:
+                    same_column = position.coordinate[1] - column
+
+                    if same_column == 0:
+                        direction = 'vertical'
+                    else:
+                        return (False, None)
+            # entra aqui em todas as outras posições
+            else:
+                if direction == 'horizontal':
+                    if (position.coordinate[0] - line) != 0:
+                        return (False, None)
+
+                if direction == 'vertical':
+                    if (position.coordinate[1] - column) != 0:
+                        return (False, None)
+
+        return (True, direction)

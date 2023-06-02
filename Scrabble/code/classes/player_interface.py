@@ -117,11 +117,7 @@ class PlayerInterface(DogPlayerInterface):
 			if button_name == 'button(submit)':
 				button.bind(
 					"<Button-1>",
-					lambda event: self.general_click(
-						event, 
-						'Envio de palavra',
-						'Quer realmente submeter a palavra?',
-						'Palavra será analisada', 'Voltando ao jogo'))
+					lambda event: self.submit_word_click(event))
 			elif button_name == 'button(return)':
 				button.bind(
 					"<Button-1>",
@@ -246,6 +242,9 @@ class PlayerInterface(DogPlayerInterface):
 		else:
 			messagebox.showinfo('', \
 		       					negat_message)
+
+	def submit_word_click(self, event):
+		self.round_manager.submit_word()
 
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
