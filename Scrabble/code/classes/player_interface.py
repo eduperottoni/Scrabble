@@ -4,6 +4,7 @@ from dog.start_status import StartStatus
 import tkinter as tk
 from tkinter import Frame, Label, messagebox, Button, Menu, Canvas, simpledialog, PhotoImage
 from PIL import Image, ImageTk
+import copy
 
 from classes.round_manager import RoundManager
 from classes.enums import State, Move
@@ -117,15 +118,11 @@ class PlayerInterface(DogPlayerInterface):
 			if button_name == 'button(submit)':
 				button.bind(
 					"<Button-1>",
-					lambda event: self.submit_word_click(event))
+					lambda event: self.submit_word(event))
 			elif button_name == 'button(return)':
 				button.bind(
 					"<Button-1>",
-					lambda event: self.general_click(
-						event,
-						'Retorno de cards ao pack',
-						'Os últimos cards adicionados ao tabuleiro serão retornados ao pack. Quer mesmo?',
-						'Devolvendo packs', 'Voltando ao jogo'))
+					lambda event: self.return_cards_to_pack(event))
 			elif button_name == 'button(giveup)':
 				button.bind(
 					"<Button-1>",
@@ -243,8 +240,11 @@ class PlayerInterface(DogPlayerInterface):
 			messagebox.showinfo('', \
 		       					negat_message)
 
-	def submit_word_click(self, event):
+	def submit_word(self, event):
 		self.round_manager.submit_word()
+
+	def return_cards_to_pack(self, event):
+		self.round_manager.return_cards_to_pack()
 
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
@@ -374,6 +374,23 @@ class PlayerInterface(DogPlayerInterface):
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
 				self.local_pack_cards[index].id = f'local({index}, {card.letter})'
+	
+	def exchange_cards(self, board_coordinates: 'list(tuple)', pack_indexes: 'list(int)') -> None:
+		if len(board_coordinates) <= len(pack_indexes):
+			print('Exchanging cards on PlayerInterface')
+			print(board_coordinates)
+			for index, coord in enumerate(board_coordinates):
+				print(f'coord = ({coord[0]}, {coord[1]}) para index = {pack_indexes[index]}')
+				pack_label_image = copy.copy(self.local_pack_cards[pack_indexes[index]].image)
+				board_label_image = copy.copy(self.board_positions[coord[0]][coord[1]].image)
+				print(f'image {pack_label_image} para {board_label_image}')
+				self.local_pack_cards[pack_indexes[index]].configure(image=board_label_image)
+				self.local_pack_cards[pack_indexes[index]].image = board_label_image
+				self.board_positions[coord[0]][coord[1]].configure(image=pack_label_image)
+				self.board_positions[coord[0]][coord[1]].image = pack_label_image
+		# else:
+		# 	for i, pack_index in enumerate(pack_indexes):
+		# 		print(f'{self.local_pack_cards[pack_index].cget("image")}')
 
 	def mark_card(self, index: int) -> None:
 		"""

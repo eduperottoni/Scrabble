@@ -30,9 +30,10 @@ class Word:
 
         :returns tuple<Position, Position>: 
         """  
-        self.__positions = sorted(self.positions, key=lambda position: position.coordinate[0] if self.__direction == "horizontal" else position.coordinate[1])
+        self.__positions = sorted(self.__positions, key=lambda position: position.coordinate[0] if self.__direction == "horizontal" else position.coordinate[1])
         min_position = self.positions[0]
         max_position = self.positions[-1]
+        print(self.__positions)
 
         print(f"A POSIÇÃO MAX É: {max_position.coordinate}, e a posição MIN é {min_position.coordinate}")
 
@@ -48,3 +49,9 @@ class Word:
         for position in self.__positions:
             string += position.card.letter
         return string
+    
+    def reset(self):
+        positions = [position for position in self.__positions]
+        self.__positions = []
+        self.__direction = ''
+        return positions

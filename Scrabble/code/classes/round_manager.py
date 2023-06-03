@@ -122,6 +122,8 @@ class RoundManager:
 
                         # adicionando a posição na currrent word
                         self.board.current_word.add_position(position)
+                        print(f'adicionando {position.card.letter} na palavra')
+                        print(f'palavra atual = {self.board.current_word.positions}')
                         palavra = self.board.current_word.get_string()
                     else:
                         self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
@@ -221,11 +223,43 @@ class RoundManager:
             else:
                 # retornar os cards pro pack
                 self.__player_interface.show_message(title='Palavra inválida', message="A palavra não respeita as regras!")
-            
 
-                
-            
         else:
             print("NOT CONSTRUCTION MOVE")
             self.__player_interface.show_message(title='Jogada inválida', message="Jogada inválida, é preciso formar uma palavra para submetê-la!")
-            
+
+    def reset_move(self):
+        """
+        Resets the move
+        """
+        if self.move_type != Move.GIVE_UP:
+            self.local_player.dropouts = 0
+        self.board.current_word.reset()
+        self.local_player.pack.deselect_all_cards()
+        self.board.reset_curr_adj_words_dict()
+    
+    def return_cards_to_pack(self):
+        """
+        Return cards main methos (called in the execution of the use case)
+        """
+        print('Running return_cards_to_pack')
+        if self.local_player.is_turn:
+            self.proceed_cards_returning()
+            self.reset_move()
+        else:
+            self.player_interface.show_message(title='INVALID OPERATION', message="It's not your turn")
+
+    def proceed_cards_returning(self):
+        if self.move_type != Move.CHANGE:
+            positions = self.board.current_word.positions
+            coordinates = []
+            for position in positions:
+                coordinates.append(position.coordinate)
+            print(self.board.current_word.positions)
+            positions = self.board.current_word.reset()
+            board_coordinates = [position.coordinate for position in positions]
+            empty_pack_indexes = self.local_player.pack.get_empty_indexes()
+            print(f'Running proceed cards returning to {board_coordinates} and {empty_pack_indexes}')
+            self.player_interface.exchange_cards(board_coordinates, empty_pack_indexes)
+        else:
+            self.player_interface.show_message(title='INVALID OPERATION', message="It's not alowed to return cards if the move is CHANGE")

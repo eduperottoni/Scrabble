@@ -51,6 +51,12 @@ class Pack:
     
     def get_selected_card_index(self) -> int:
         return self.__cards.index(self.__current_selected_cards[0])
+    
+    def get_empty_indexes(self):
+        indexes = []
+        for index, card in enumerate(self.cards):
+            if not card: indexes.append(index)
+        return indexes
 
     def remove_selected_cards(self) -> 'list[int]':
         indexes = []

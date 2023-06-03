@@ -12,6 +12,14 @@ class Board:
         print(self.__dictionary.search_word('xicara'))
         print(self.__dictionary.search_word('xyz'))
         self.__current_word = Word()
+        
+        """
+        This is a dictionary with current and adjacent words,
+        populated during the submission process
+        {'current': Word,
+        'adjacents' = [Word, Word, Word]}
+        """
+        self.__current_adjacent_words_dict = {}
 
         '''
         This attribute is a dictionary with the following structure:
@@ -163,6 +171,7 @@ class Board:
         Called whenever a submission of word is running
         Returns if the current word's cards are positioned in same line or column in the board
         """
+        print('Running verify_current_word_same_line_or_column')
         word = self.current_word
         line = None
         column = None
@@ -172,11 +181,11 @@ class Board:
             x = position.coordinate[0]
             y = position.coordinate[1]
 
-            # só entra aqui na primeira posição
+            # só entra aqui na primeira posição (eixo do vetor)
             if line == None:
                 line = x
                 column = y
-            # só entra aqui na segunda posição
+            # só entra aqui na segunda posição (direção do vetor)
             elif direction == None:
                 same_line = position.coordinate[0] - line
 
@@ -235,3 +244,6 @@ class Board:
                 coords.append((min_coord[0], y))
         
         return coords
+    
+    def reset_curr_adj_words_dict(self):
+        self.__current_adjacent_words_dict = {}
