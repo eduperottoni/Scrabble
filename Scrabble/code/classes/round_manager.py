@@ -257,15 +257,18 @@ class RoundManager:
             for position in positions:
                 coordinates.append(position.coordinate)
             print(self.board.current_word.positions)
+
             positions = self.board.current_word.reset()
             board_coordinates = [position.coordinate for position in positions]
             empty_pack_indexes = self.local_player.pack.get_empty_indexes()
-            # TODO falta atualizar o pack do jogador no objeto
             cards = [position.card for position in positions]
+            [position.reset() for position in positions]
             self.local_player.pack.insert_cards(cards, empty_pack_indexes)
+
             print(f'Running proceed cards returning to {board_coordinates} and {empty_pack_indexes}')
             aux_dict = {}
             for coordinate in board_coordinates:
+                #TODO check if the position is special. If it is, we have to pass the corresponding special string
                 aux_dict[coordinate] = 'NORMAL'
             self.player_interface.update_gui_board_positions(aux_dict)
             aux_dict = {}

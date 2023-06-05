@@ -28,6 +28,10 @@ class Position:
 
     def disable(self) -> None:
         self.__is_enabled = False
+    
+    def reset(self) -> None:
+        self.__card = None
+        self.__is_enabled = True
 
 class SpecialPosition(Position):
     def __init__(self, coordinate: 'tuple(int, int)'):
