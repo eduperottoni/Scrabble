@@ -211,19 +211,11 @@ class RoundManager:
                     # seta no board que a primeira palavra agora foi criada
                     self.board.first_word_created()
 
-                    # valida regras gerais da palavra
-                    if self.board.verify_valid_word():
-                        self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
-                    else:
-                        self.__player_interface.show_message(title='Palavra inválida', message="Palavra inválida (por enquanto)!")
-
-                else:
-                    # retornar os cards pro pack
-                    self.__player_interface.show_message(title='Palavra inválida', message="A palavra não respeita as regras de primeira palavra!")
-                    
+            # valida regras gerais da palavra
+            if self.board.verify_valid_word():
+                self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
             else:
-                # retornar os cards pro pack
-                self.__player_interface.show_message(title='Palavra inválida', message="A palavra não respeita as regras!")
+                self.__player_interface.show_message(title='Palavra inválida', message="Palavra inválida!")
 
         else:
             print("NOT CONSTRUCTION MOVE")

@@ -19,7 +19,7 @@ class Board:
         {'current': Word,
         'adjacents' = [Word, Word, Word]}
         """
-        self.__current_adjacent_words_dict = {}
+        self.__current_adjacent_words_dict = {'current': None, 'adjacents': []}
 
         '''
         This attribute is a dictionary with the following structure:
@@ -140,37 +140,93 @@ class Board:
 
         aux = self.verify_current_word_same_line_or_column()
         direction = aux[1]
+        
         if direction != None:
             print(f"A PALAVRA ESTÁ NA {aux[1]}")
             self.current_word.direction = direction
             max_min_positions = self.current_word.get_min_max_positions()
+            
             min_position = max_min_positions[0]
             max_position = max_min_positions[1]
+            
             fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
-            print(f"fill: {fill}")
+            
             if not fill:
                 print("PALAVRA NÃO ESTÁ CONECTADA")
+                return False
             else:
                 print("PALAVRA ESTÁ CONECTADA")
-
-            return True
-        return False
+                return True
+        else:
+            print("Erro ao tentar encontrar direção da palavra.")
+            return False
     
     def determine_adjacent_words(self):
+        """
+        self.__current_adjacent_words_dict = 
+        {'current': Word,
+        'adjacents' = [Word, Word, Word]}
+
+        
+        self.__valid_words_search_dict =
+        {(0,0) : {'horizontal': <WORD_IN_0,0_HORIZONTAL>,
+                    'vertical': <WORD_IN_0,0_VERTICAL>},
+        (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
+                    'vertical': <WORD_IN_0,1_VERTICAL>}}
+        """
+
         print("determine_adjacent_words")
-    
+        
+        self.__current_adjacent_words_dict['current'] = self.current_word
+
+        #TODO: não tem como testar isso agora, só depois que der pra enviar a jogada pro outro jogador
+        # for position in self.current_word.positions:
+        #     if self.current_word.direction == 'horizontal':
+        #         coord1 = (position.coordinate[0], position.coordinate[1] + 1)
+        #         coord2 = (position.coordinate[0], position.coordinate[1] - 1)
+                
+        #         if self.__valid_words_search_dict[coord1]['vertical']:
+        #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord1]['vertical'])
+        #         elif self.__valid_words_search_dict[coord2]['vertical']:
+        #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord2]['vertical'])   
+        #     elif self.current_word.direction == 'vertical':
+        #         coord1 = (position.coordinate[0] + 1, position.coordinate[1])
+        #         coord2 = (position.coordinate[0] - 1, position.coordinate[1])
+                
+        #         if self.__valid_words_search_dict[coord1]['horizontal']:
+        #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord1]['horizontal'])
+        #         elif self.__valid_words_search_dict[coord2]['horizontal']:
+        #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord2]['horizontal'])
+        
+        # print("PALAVRAS ADJACENTES DETERMINADAS!")
         return False
 
     def verify_words_existance_and_validity(self):
         print("verify_words_existance_and_validity")
 
-        return False
+
+        current_string = (self.__current_adjacent_words_dict['current'].get_string()).lower()
+        print(f"AVALIANDO A PALAVRA: {current_string}")
+        if not self.__dictionary.search_word(current_string):
+            print(f"PALAVRA {current_string} NÃO EXISTE!")
+            return False
+
+        for word in self.__current_adjacent_words_dict['adjacents']:
+            adjacent_string = (word.get_string()).lower()
+            print(f"AVALIANDO A PALAVRA: {adjacent_string}")
+            if not self.__dictionary.search_word(adjacent_string):
+                print(f"PALAVRA {adjacent_string} NÃO EXISTE!")
+                return False
+
+        print("PALAVRAS VÁLIDADAS NO DICIONÁRIO!")
+        return True
     
     def verify_current_word_same_line_or_column(self):
         """
         Called whenever a submission of word is running
         Returns if the current word's cards are positioned in same line or column in the board
         """
+        #TODO: mudar no diagrama pq a lógica mudou
         print('Running verify_current_word_same_line_or_column')
         word = self.current_word
         line = None
@@ -178,51 +234,59 @@ class Board:
         direction = None
 
         for position in word.positions:
-            x = position.coordinate[0]
-            y = position.coordinate[1]
+            l = position.coordinate[0]
+            c = position.coordinate[1]
 
             # só entra aqui na primeira posição (eixo do vetor)
             if line == None:
-                line = x
-                column = y
+                line = l
+                column = c
             # só entra aqui na segunda posição (direção do vetor)
             elif direction == None:
-                same_line = position.coordinate[0] - line
+                same_line = l - line
 
                 if same_line == 0:
-                    direction = 'vertical'
+                    direction = 'horizontal'
                 else:
-                    same_column = position.coordinate[1] - column
+                    same_column = c - column
 
                     if same_column == 0:
-                        direction = 'horizontal'
+                        direction = 'vertical'
                     else:
+                        print("1 - verificação de mesma linha ou coluna NOP")
                         return (False, None)
             # entra aqui em todas as outras posições
             else:
-                if direction == 'vertical':
-                    if (position.coordinate[0] - line) != 0:
-                        return (False, None)
-
                 if direction == 'horizontal':
-                    if (position.coordinate[1] - column) != 0:
+                    if (position.coordinate[0] - line) != 0:
+                        print("2 - verificação de mesma linha ou coluna NOP")
                         return (False, None)
 
+                if direction == 'vertical':
+                    if (position.coordinate[1] - column) != 0:
+                        print("3 - verificação de mesma linha ou coluna NOP")
+                        return (False, None)
+
+        print("verificação de mesma linha ou coluna OK")
+        print(f"DIREÇÃO: {direction}")
         return (True, direction)
     
     def verify_positions_filling(self, min_position: tuple, max_position: tuple) -> bool:
         print(min_position, max_position)
 
         all_coords = self.generate_coords(min_coord=min_position, max_coord=max_position, direction=self.current_word.direction)
-
+        
         for coord in all_coords:
             position = self.get_position(board_coord=coord)
 
             if position.is_enabled:
+                print(f"{position.coordinate}")
+                print("verificação de palavra totalmente conexa NOP")
                 return False
             else:
                 self.__current_word.add_position(position)
 
+        print("verificação de palavra totalmente conexa OK")
         return True
     
     def get_position(self, board_coord: tuple):
@@ -236,13 +300,15 @@ class Board:
         coords = []
 
         if direction == 'horizontal':
-            for x in range(min_coord[0], max_coord[0]+1):
-                coords.append((x, max_coord[1]))
+            for x in range(min_coord[1], max_coord[1]+1):
+                print((max_coord[0], x))
+                coords.append((max_coord[0], x))
 
         elif direction == 'vertical':
-            for y in range(min_coord[1], max_coord[1]+1):
-                coords.append((min_coord[0], y))
-        
+            for y in range(min_coord[0], max_coord[0]+1):
+                print((y, min_coord[1]))
+                coords.append((y, min_coord[1]))
+
         return coords
     
     def reset_curr_adj_words_dict(self):
