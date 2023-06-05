@@ -1,4 +1,9 @@
 from PIL import Image, ImageDraw, ImageFont
+import sys
+
+sys.path.insert(1, '../../constants')
+
+from positions import POSITIONS_RGB
 
 #Path to save the positions
 PATH = 'positions'
@@ -13,16 +18,6 @@ LETTER_FONT = ImageFont.truetype('../fonts/Roboto-Medium.ttf', LETTER_SIZE)
 # Define the colors for the position background and border
 POSITION_COLOR = (255, 255, 255)
 BORDER_COLOR = (0, 0, 0)
-
-# Define a positions list
-POSITIONS_RGB = {
-    'DW': (238, 242, 14),
-    'TL': (81, 220, 212),
-    'DL': (80, 115, 238),
-    'TW': (255, 133, 65),
-    '*': (211, 207, 205),
-    'NORMAL': (255, 255, 255)
-}
 
 # Define a function to draw a position for a given description
 def draw_position(pos_desc: str) -> None:

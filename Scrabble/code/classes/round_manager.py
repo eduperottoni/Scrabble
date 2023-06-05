@@ -110,7 +110,8 @@ class RoundManager:
                     position = self.board.positions[coord[0]][coord[1]]
                     card = self.local_player.pack.current_selected_cards[0]
                     if position.is_enabled:
-                        self.player_interface.update_gui_board_position((coord[0], coord[1]), card.letter)
+
+                        self.player_interface.update_gui_board_positions({(coord[0], coord[1]): card.letter})
                         
                         # desabilita o card do board pra não poder mais adicionar lá
                         position.card = card
@@ -118,7 +119,7 @@ class RoundManager:
 
                         # limpa e desabilita o card do pack
                         indexes = self.local_player.pack.remove_selected_cards()
-                        self.player_interface.update_gui_local_pack(indexes)
+                        self.player_interface.update_gui_local_pack({indexes[0]: 'NORMAL'})
 
                         # adicionando a posição na currrent word
                         self.board.current_word.add_position(position)
@@ -259,7 +260,19 @@ class RoundManager:
             positions = self.board.current_word.reset()
             board_coordinates = [position.coordinate for position in positions]
             empty_pack_indexes = self.local_player.pack.get_empty_indexes()
+            # TODO falta atualizar o pack do jogador no objeto
+            cards = [position.card for position in positions]
+            self.local_player.pack.insert_cards(cards, empty_pack_indexes)
             print(f'Running proceed cards returning to {board_coordinates} and {empty_pack_indexes}')
-            self.player_interface.exchange_cards(board_coordinates, empty_pack_indexes)
+            aux_dict = {}
+            for coordinate in board_coordinates:
+                aux_dict[coordinate] = 'NORMAL'
+            self.player_interface.update_gui_board_positions(aux_dict)
+            aux_dict = {}
+            print(empty_pack_indexes)
+            for index, empty_index in enumerate(empty_pack_indexes):
+                aux_dict[empty_index] = cards[index].letter
+            self.player_interface.update_gui_local_pack(aux_dict)
+            
         else:
             self.player_interface.show_message(title='INVALID OPERATION', message="It's not alowed to return cards if the move is CHANGE")

@@ -5,6 +5,8 @@ import tkinter as tk
 from tkinter import Frame, Label, messagebox, Button, Menu, Canvas, simpledialog, PhotoImage
 from PIL import Image, ImageTk
 import copy
+from constants.positions import POSITIONS_RGB
+from constants.cards import CARDS_VALUES_BY_LETTER
 
 from classes.round_manager import RoundManager
 from classes.enums import State, Move
@@ -39,6 +41,11 @@ class PlayerInterface(DogPlayerInterface):
 			menu=self.file_menu,
 			underline=0
 		)
+		# Dictionary with images charged
+		self.__images = {
+			'CARDS': {}, 
+			'POSITIONS': {}
+		}
 		# Matrix of labels
 		self.board_positions = []
 		# List of labels
@@ -67,6 +74,7 @@ class PlayerInterface(DogPlayerInterface):
 		for frame in [self.board_frame, self.main_frame]:
 			frame.pack()
 			frame.pack_propagate(0)
+		self.__load_images()
 		self.__render_gui()
 
 	@property
@@ -87,6 +95,20 @@ class PlayerInterface(DogPlayerInterface):
 		message = self.__dog_server_interface.initialize(player_name, self)
 		messagebox.showinfo(message=message)
 
+	def __load_images(self):
+		for letter in CARDS_VALUES_BY_LETTER.keys():
+			self.__images['CARDS'][f'{letter}'] = self.__load_card_img(letter, self.board_size/self.board_side)
+		for position in POSITIONS_RGB.keys():
+			self.__images['POSITIONS'][f'{position}'] = self.__load_position_img(position, self.board_size/self.board_side)
+		print('Cards and positions images loaded')
+
+
+	def __load_position_img(self, pos_type: str, size: int) -> ImageTk.PhotoImage:
+		RELATIVE_PATH = 'src/images/positions/scrabble'
+		image = self.__load_img(f'{RELATIVE_PATH}_{pos_type.upper()}.png', int(size)-6)
+		return image
+
+	
 	def __load_img(self, img_path: str, size: int) -> ImageTk.PhotoImage:
 		"""
 		Loads the image in the label, using ImageTk from PIL
@@ -200,7 +222,7 @@ class PlayerInterface(DogPlayerInterface):
 				elif ((line, column) == (7,7)): dict_key = '*'
 				
 				# Creating Label's image
-				image = self.__load_img(POSITIONS_IMG_DICT[dict_key], int(position_size)-6)		
+				image = self.__images['POSITIONS'][dict_key]	
 				label = Label(
 					frame_position, 
 					bg=interface.BG_BOARD_POSITIONS,
@@ -354,40 +376,51 @@ class PlayerInterface(DogPlayerInterface):
 		self.scores['remote'].configure(text=f'{str(remote_score)}')
 		self.scores['local'].configure(text=f'{str(local_score)}')
 
-	def update_gui_board_position(self, coord: tuple, letter: str):
-		new_image = self.__load_card_img(letter, self.board_size/self.board_side)
-		self.board_positions[coord[0]][coord[1]].configure(image=new_image)
-		self.board_positions[coord[0]][coord[1]].image = new_image
+	# def update_gui_board_position(self, coord: tuple, letter: str):
+	# 	new_image = self.__images['CARDS'](letter, self.board_size/self.board_side)
+	# 	self.board_positions[coord[0]][coord[1]].configure(image=new_image)
+	# 	self.board_positions[coord[0]][coord[1]].image = new_image
+
+	def update_gui_board_positions(self, coords_letters: dict):
+		print(f'Running update_gui_board_position para {coords_letters}')
+		for coord, letter in coords_letters.items():
+			print(f'-- Changing {coord} for {letter}')
+			new_image = self.__images['CARDS'][letter] if letter != 'NORMAL' else self.__images['POSITIONS']['NORMAL']
+			self.board_positions[coord[0]][coord[1]].configure(image=new_image)
+			self.board_positions[coord[0]][coord[1]].image = new_image
+
 		
-	def update_gui_local_pack(self, indexes : 'list[int]' = None):
+	def update_gui_local_pack(self, indexes_letters : dict = None):
 		#TODO Fazer uma otimização aqui: Por que atualizar tudo se apenas 2 letras mudarem?
-		if indexes:
-			for index in indexes:
-				new_image = self.__load_card_img('NORMAL', self.board_size/self.board_side)
+		if indexes_letters:
+			for index, letter in indexes_letters.items():
+				print(f'-- Updating local_pack[{index}] para {letter}')
+				new_image = self.__images['CARDS'][letter] if letter != 'NORMAL' else self.__images['POSITIONS']['NORMAL']
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
 				self.local_pack_cards[index].id = f'local({index}, NORMAL)'
 				self.mark_off_card(index)
 		else:
 			for index, card in enumerate(self.round_manager.local_player.pack.cards):
-				new_image = self.__load_card_img(card.letter, self.board_size/self.board_side)
+				new_image = self.__images['CARDS'][f'{card.letter}']
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
 				self.local_pack_cards[index].id = f'local({index}, {card.letter})'
 	
-	def exchange_cards(self, board_coordinates: 'list(tuple)', pack_indexes: 'list(int)') -> None:
-		if len(board_coordinates) <= len(pack_indexes):
-			print('Exchanging cards on PlayerInterface')
-			print(board_coordinates)
-			for index, coord in enumerate(board_coordinates):
-				print(f'coord = ({coord[0]}, {coord[1]}) para index = {pack_indexes[index]}')
-				pack_label_image = copy.copy(self.local_pack_cards[pack_indexes[index]].image)
-				board_label_image = copy.copy(self.board_positions[coord[0]][coord[1]].image)
-				print(f'image {pack_label_image} para {board_label_image}')
-				self.local_pack_cards[pack_indexes[index]].configure(image=board_label_image)
-				self.local_pack_cards[pack_indexes[index]].image = board_label_image
-				self.board_positions[coord[0]][coord[1]].configure(image=pack_label_image)
-				self.board_positions[coord[0]][coord[1]].image = pack_label_image
+	# def exchange_cards(self, board_coordinates: 'list(tuple)', pack_indexes: 'list(int)') -> None:
+
+		# if len(board_coordinates) <= len(pack_indexes):
+		# 	print('Exchanging cards on PlayerInterface')
+		# 	print(board_coordinates)
+		# 	for index, coord in enumerate(board_coordinates):
+		# 		print(f'coord = ({coord[0]}, {coord[1]}) para index = {pack_indexes[index]}')
+		# 		pack_label_image = self.local_pack_cards[pack_indexes[index]].image
+		# 		board_label_image = self.board_positions[coord[0]][coord[1]].image
+		# 		print(f'image {pack_label_image} para {board_label_image}')
+		# 		self.local_pack_cards[pack_indexes[index]].configure(image=board_label_image)
+		# 		self.local_pack_cards[pack_indexes[index]].image = board_label_image
+		# 		self.board_positions[coord[0]][coord[1]].configure(image=pack_label_image)
+		# 		self.board_positions[coord[0]][coord[1]].image = pack_label_image
 		# else:
 		# 	for i, pack_index in enumerate(pack_indexes):
 		# 		print(f'{self.local_pack_cards[pack_index].cget("image")}')

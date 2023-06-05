@@ -22,9 +22,9 @@ class Pack:
         """
         Inserts cards on the specified positions in pack
         """
-        for position in coords:
+        for index, position in enumerate(coords):
             if self.__cards[position] != None: raise PositionAlreadyHasCardException
-            else: self.__cards[position] = cards[position]
+            else: self.__cards[position] = cards[index]
     
     def select_card(self, index: int) -> None:
         if self.__cards[index] == None: raise PositionDoesNotHaveCardException

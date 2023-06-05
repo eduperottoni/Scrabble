@@ -42,11 +42,11 @@ class Board:
         for line in range(BOARD_SIDE):
             positions_line = []
             for column in range(BOARD_SIDE):
-                position = NormalPosition((column, line))
-                if ((line, column) in tw): position = TWPosition((column, line))
-                elif ((line, column) in dw): position = DWPosition((column, line))
-                elif ((line, column) in dl): position = DLPosition((column, line))
-                elif ((line, column) in tl): position = TLPosition((column, line))
+                position = NormalPosition((line, column))
+                if ((line, column) in tw): position = TWPosition((line, column))
+                elif ((line, column) in dw): position = DWPosition((line, column))
+                elif ((line, column) in dl): position = DLPosition((line, column))
+                elif ((line, column) in tl): position = TLPosition((line, column))
                 positions_line.append(position)
             self.__positions.append(positions_line)
 
