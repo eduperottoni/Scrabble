@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 import copy
 from constants.positions import POSITIONS_RGB
 from constants.cards import CARDS_VALUES_BY_LETTER
+from constants.positions import TW, DW, DL, TL
 
 from classes.round_manager import RoundManager
 from classes.enums import State, Move
@@ -385,7 +386,22 @@ class PlayerInterface(DogPlayerInterface):
 		print(f'Running update_gui_board_position para {coords_letters}')
 		for coord, letter in coords_letters.items():
 			print(f'-- Changing {coord} for {letter}')
-			new_image = self.__images['CARDS'][letter] if letter != 'NORMAL' else self.__images['POSITIONS']['NORMAL']
+			print("Image position", self.__images['POSITIONS'])
+			print("Image cards", self.__images['CARDS'])
+			if letter == 'TW':
+				new_image = self.__images['POSITIONS']['TW']
+			if letter == 'DW':
+				new_image = self.__images['POSITIONS']['DW']
+			if letter == 'DL':
+				new_image = self.__images['POSITIONS']['DL']
+			if letter == 'TL':
+				new_image = self.__images['POSITIONS']['TL']
+			if letter == 'NORMAL':
+				new_image = self.__images['POSITIONS']['NORMAL']
+			if letter == '*':
+				new_image = self.__images['POSITIONS']['*']
+			else:
+				new_image = self.__images['CARDS'][letter]
 			self.board_positions[coord[0]][coord[1]].configure(image=new_image)
 			self.board_positions[coord[0]][coord[1]].image = new_image
 

@@ -2,6 +2,7 @@ from classes.enums import State, Move
 from classes.player import Player
 from classes.board import Board
 from constants import messages
+from constants.positions import TW, DW, DL, TL
 
 class RoundManager:
     def __init__(self):
@@ -260,8 +261,15 @@ class RoundManager:
             print(f'Running proceed cards returning to {board_coordinates} and {empty_pack_indexes}')
             aux_dict = {}
             for coordinate in board_coordinates:
+                print("COORDENADA:", coordinate)
+                print("TW:", TW)
+                if coordinate in TW:  aux_dict[coordinate] = 'TW'
+                if coordinate in DW: aux_dict[coordinate] = 'DW'
+                if coordinate in DL: aux_dict[coordinate] = 'DL'
+                if coordinate in TL: aux_dict[coordinate] = 'TL'
+                if coordinate == (7,7): aux_dict[coordinate] = '*'
                 #TODO check if the position is special. If it is, we have to pass the corresponding special string
-                aux_dict[coordinate] = 'NORMAL'
+                else: aux_dict[coordinate] = 'NORMAL'
             self.player_interface.update_gui_board_positions(aux_dict)
             aux_dict = {}
             print(empty_pack_indexes)
