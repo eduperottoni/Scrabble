@@ -3,6 +3,7 @@ from classes.player import Player
 from classes.board import Board
 from constants import messages
 from constants.positions import TW, DW, DL, TL
+from classes.position import TWPosition, DLPosition, DWPosition, TLPosition
 
 class RoundManager:
     def __init__(self):
@@ -260,16 +261,18 @@ class RoundManager:
 
             print(f'Running proceed cards returning to {board_coordinates} and {empty_pack_indexes}')
             aux_dict = {}
-            for coordinate in board_coordinates:
-                print("COORDENADA:", coordinate)
-                print("TW:", TW)
-                if coordinate in TW:  aux_dict[coordinate] = 'TW'
-                if coordinate in DW: aux_dict[coordinate] = 'DW'
-                if coordinate in DL: aux_dict[coordinate] = 'DL'
-                if coordinate in TL: aux_dict[coordinate] = 'TL'
-                if coordinate == (7,7): aux_dict[coordinate] = '*'
+            for index, position in enumerate(positions):
+                coordinate = board_coordinates[index]
+                coord_type = 'NORMAL'
+                if isinstance(position, TWPosition): coord_type = 'TW'
+                elif isinstance(position, DWPosition): coord_type = 'DW'
+                elif isinstance(position, DLPosition): coord_type = 'DL'
+                elif isinstance(position, TLPosition): coord_type = 'TL'
+                elif coordinate == (7,7): coord_type = '*'
+                else: coord_type = 'NORMAL' 
+                aux_dict[coordinate] = coord_type
                 #TODO check if the position is special. If it is, we have to pass the corresponding special string
-                else: aux_dict[coordinate] = 'NORMAL'
+            print(f'Before call update_gui_board_position() -> {aux_dict}')
             self.player_interface.update_gui_board_positions(aux_dict)
             aux_dict = {}
             print(empty_pack_indexes)

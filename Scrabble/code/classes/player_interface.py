@@ -390,18 +390,19 @@ class PlayerInterface(DogPlayerInterface):
 			print("Image cards", self.__images['CARDS'])
 			if letter == 'TW':
 				new_image = self.__images['POSITIONS']['TW']
-			if letter == 'DW':
+			elif letter == 'DW':
 				new_image = self.__images['POSITIONS']['DW']
-			if letter == 'DL':
+			elif letter == 'DL':
 				new_image = self.__images['POSITIONS']['DL']
-			if letter == 'TL':
+			elif letter == 'TL':
 				new_image = self.__images['POSITIONS']['TL']
-			if letter == 'NORMAL':
-				new_image = self.__images['POSITIONS']['NORMAL']
-			if letter == '*':
+			elif letter == '*':
 				new_image = self.__images['POSITIONS']['*']
+			elif letter == 'NORMAL':
+				new_image = self.__images['POSITIONS']['NORMAL']
 			else:
 				new_image = self.__images['CARDS'][letter]
+
 			self.board_positions[coord[0]][coord[1]].configure(image=new_image)
 			self.board_positions[coord[0]][coord[1]].image = new_image
 
