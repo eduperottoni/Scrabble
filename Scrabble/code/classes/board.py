@@ -136,13 +136,13 @@ class Board:
             return False
 
     def verify_connected_positions(self):
-        print("VERIFICANDO CONEXÃO DOS CARDS DA PALAVRA")
+        print("--VERIFICANDO CONEXÃO DOS CARDS DA PALAVRA")
 
         aux = self.verify_current_word_same_line_or_column()
         direction = aux[1]
         
         if direction != None:
-            print(f"A PALAVRA ESTÁ NA {aux[1]}")
+            print(f"---A PALAVRA ESTÁ NA {aux[1]}")
             self.current_word.direction = direction
             max_min_positions = self.current_word.get_min_max_positions()
             
@@ -152,13 +152,13 @@ class Board:
             fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
             
             if not fill:
-                print("PALAVRA NÃO ESTÁ CONECTADA")
+                print("--PALAVRA NÃO ESTÁ CONECTADA")
                 return False
             else:
-                print("PALAVRA ESTÁ CONECTADA")
+                print("--PALAVRA ESTÁ CONECTADA")
                 return True
         else:
-            print("Erro ao tentar encontrar direção da palavra.")
+            print("--Erro ao tentar encontrar direção da palavra.")
             return False
     
     def determine_adjacent_words(self):
@@ -204,16 +204,17 @@ class Board:
     def verify_words_existance_and_validity(self):
         print("verify_words_existance_and_validity")
 
-
+        print(f'--palavra atual: ')
+        print([position.card.letter for position in self.__current_adjacent_words_dict["current"].positions])
         current_string = (self.__current_adjacent_words_dict['current'].get_string()).lower()
-        print(f"AVALIANDO A PALAVRA: {current_string}")
+        print(f"--AVALIANDO A PALAVRA: {current_string}")
         if not self.__dictionary.search_word(current_string):
             print(f"PALAVRA {current_string} NÃO EXISTE!")
             return False
 
         for word in self.__current_adjacent_words_dict['adjacents']:
             adjacent_string = (word.get_string()).lower()
-            print(f"AVALIANDO A PALAVRA: {adjacent_string}")
+            print(f"--AVALIANDO A PALAVRA: {adjacent_string}")
             if not self.__dictionary.search_word(adjacent_string):
                 print(f"PALAVRA {adjacent_string} NÃO EXISTE!")
                 return False
@@ -275,22 +276,22 @@ class Board:
         print(min_position, max_position)
 
         all_coords = self.generate_coords(min_coord=min_position, max_coord=max_position, direction=self.current_word.direction)
-        
+        print(f'Coordenadas geradas pelo generate_copordenates : {all_coords}')
         for coord in all_coords:
             position = self.get_position(board_coord=coord)
 
             if position.is_enabled:
                 print(f"{position.coordinate}")
-                print("verificação de palavra totalmente conexa NOP")
+                print("verificação de palavra totalmente conexa ERRO")
                 return False
-            else:
+            elif position not in self.__current_word.positions:
                 self.__current_word.add_position(position)
 
         print("verificação de palavra totalmente conexa OK")
         return True
     
     def get_position(self, board_coord: tuple):
-        return self.__positions[board_coord[1]][board_coord[0]]
+        return self.__positions[board_coord[0]][board_coord[1]]
 
     def generate_coords(self, min_coord: tuple, max_coord: tuple, direction: str) -> list:
         """
