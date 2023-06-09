@@ -13,6 +13,11 @@ class RoundManager:
         self.__board = Board()
         self.__player_interface = None
         self.__move_type = None
+        self.__winner = None
+    
+    @property
+    def winner(self):
+        return self.__winner
     
     @property
     def player_interface(self):
@@ -41,6 +46,10 @@ class RoundManager:
     @property
     def move_type(self) -> Move:
         return self.__move_type
+    
+    @winner.setter
+    def winner(self, winner: Player):
+        self.__winner = winner
 
     @move_type.setter
     def move_type(self, move_type: Move):
@@ -318,7 +327,6 @@ class RoundManager:
         else:
             self.player_interface.show_message(title='INVALID OPERATION', message="It's not alowed to return cards if the move is CHANGE")
         
-    
     def change_cards_from_pack(self, ):
         """
         Change cards main methos (called in the execution of the use case)
@@ -362,6 +370,42 @@ class RoundManager:
         selected_cards = []
         # self.local_player.pack.remove_selected_cards()  # Nao funciona, não entendi funcionamento
 
-        print("ARRAY_selected_cards1 = ", selected_cards)
-        print("ARRAY_CARDS_BAG1 = ", cards)
-        print("CARDS1 = ", self.local_player.pack.cards)
+        # print("ARRAY_selected_cards1 = ", selected_cards)
+        # print("ARRAY_CARDS_BAG1 = ", cards)
+        # print("CARDS1 = ", self.local_player.pack.cards)
+
+
+    def give_up_round(self):
+        self.__move_type = Move.GIVE_UP
+        self.reset_move()
+        self.local_player.dropouts += 1
+        end = self.verify_game_end()
+        if end:
+            print("Enviar jogada")
+            print("Restart game")
+        else:
+            self.__match_state = State.WAITING_REMOTE_MOVE
+            print("Enviar jogada")
+            self.local_player.toogle_turn()
+
+
+    def verify_game_end(self):
+        # move_type = self.__move_type
+        # if move_type == Move.GIVE_UP:
+        #     if self.local_player.dropouts == 2 and self.remote_player.dropouts == 2:
+        #         pass
+        # else:
+        #     if self.board.bag.get_cards_amount() == 0 and self.local_player.pack.count_cards() == 0:
+        #         pass
+
+        if (self.local_player.dropouts == 2 and self.remote_player.dropouts == 2) or (self.board.bag.get_cards_amount() == 0 and self.local_player.pack.count_cards() == 0):
+            if self.local_player.score >= self.remote_player.score:
+                self.player_interface.show_message(title='WINNER', message="Local Player Won!")
+                self.winner(self.local_player)
+            elif self.local_player.score < self.remote_player.score:
+                self.player_interface.show_message(title='WINNER', message="Remote Player Won!")
+                self.winner(self.remote_player)
+            self.__match_state = State.FINISHED
+            return True
+        else:
+            return False
