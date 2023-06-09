@@ -140,6 +140,8 @@ class RoundManager:
             self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
 
     def convert_move_to_dict(self):
+        if self.move_type == Move.GIVE_UP:
+            move = {}
         move = {}
         move['match_status'] = str(self.__match_state).replace('State.', '')
         move['move_type'] = str(self.__move_type).replace('Move.', '')
@@ -193,9 +195,12 @@ class RoundManager:
             # Selects the card
             pack.select_card(index)
             print(self.local_player.pack.current_selected_cards[0].letter)
+            print(f'CARDS SELECIONADOS NO PROCEED CARD SELECTION: {self.local_player.pack.current_selected_cards}')
             self.player_interface.mark_card(index)
         elif self.move_type == Move.CHANGE:
             is_selected = pack.is_current_card_selected(index)
+            print(f'ESTÁ SELECIONADO? {is_selected}')
+            print(f'LISTA DE CARDS SELECIONADOS: {self.local_player.pack.current_selected_cards}')
             if not is_selected:
                 pack.select_card(index)
                 self.player_interface.mark_card(index)
@@ -238,7 +243,7 @@ class RoundManager:
 
                 #TODO Aqui, verificar final do jogo
                 is_game_end = self.verify_game_end()
-                #TODO Aqui, enviar a palavra
+                #TODO Aqui, enviar a jogada
                 
 
             except Exception as e:
@@ -337,9 +342,9 @@ class RoundManager:
     def proceed_change_cards(self):
         selected_cards = self.local_player.pack.current_selected_cards
         cards = self.__board.bag.exchange_cards(selected_cards)
-        # print("ARRAY_selected_cards = ", selected_cards)
-        # print("ARRAY_CARDS_BAG = ", cards)
-        # print("CARDS = ", self.local_player.pack.cards)
+        print("ARRAY_selected_cards = ", selected_cards)
+        print("ARRAY_CARDS_BAG = ", cards)
+        print("CARDS = ", self.local_player.pack.cards)
 
         # EXCHANGE BAG CARDS WITH SELECTED_CARDS
         # MARK_OFF SELECTED CARDS IN THE PACK
@@ -357,6 +362,6 @@ class RoundManager:
         selected_cards = []
         # self.local_player.pack.remove_selected_cards()  # Nao funciona, não entendi funcionamento
 
-        # print("ARRAY_selected_cards1 = ", selected_cards)
-        # print("ARRAY_CARDS_BAG1 = ", cards)
-        # print("CARDS1 = ", self.local_player.pack.cards)
+        print("ARRAY_selected_cards1 = ", selected_cards)
+        print("ARRAY_CARDS_BAG1 = ", cards)
+        print("CARDS1 = ", self.local_player.pack.cards)

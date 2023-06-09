@@ -47,6 +47,7 @@ class Pack:
         return len(self.__cards)
     
     def deselect_all_cards(self) -> None:
+        [selected.self_unselect() for selected in self.__current_selected_cards]
         self.__current_selected_cards = []
     
     def get_selected_card_index(self) -> int:
@@ -71,7 +72,7 @@ class Pack:
         print(self.__cards)
         return indexes
     
-    def is_current_card_selected(self, index):
+    def is_current_card_selected(self, index) -> bool:
         print(self.__cards[index])
         is_selected = self.__cards[index].selected
         print("aaaaaa", is_selected)

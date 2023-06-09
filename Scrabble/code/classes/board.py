@@ -130,7 +130,7 @@ class Board:
         self.verify_connected_positions()
         self.determine_adjacent_words()
         self.verify_words_existance_and_validity()
-        return
+        return True
 
     def verify_connected_positions(self):
         print("--VERIFICANDO CONEXÃO DOS CARDS DA PALAVRA")
@@ -213,7 +213,7 @@ class Board:
             print(f"--AVALIANDO A PALAVRA: {adjacent_string}")
             if not self.__dictionary.search_word(adjacent_string):
                 print(f"PALAVRA {adjacent_string} NÃO EXISTE!")
-                return False
+                raise WordDoesNotExistException
 
         print("PALAVRAS VÁLIDADAS NO DICIONÁRIO!")
         return True

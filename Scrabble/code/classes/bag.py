@@ -36,38 +36,46 @@ class Bag:
 
         :return: list of Cards objects
         """
-        # FIXME arrumar lógica
-        # print(num)
-        # print(exceptions)
+        print(f'Running get_random_cards to catch: {num} cards with the following exceptions: {exceptions}')
+        print(f'Número de cards pedidos')
         if self.get_cards_amount() >= num:
             # Calculating if there's card enough without exceptions
-            dict_copy = self.__cards_amount_per_letter
+            dict_copy = self.__cards_amount_per_letter.copy()
+
+            to_be_removed = []
+            # Excluding the exceptions
             for letter, amount in dict_copy.items():
                 if amount == 0 or letter in exceptions:
-                    dict_copy[letter] = amount
-            if sum(list(dict_copy.values())) > num:
-                # The list that will be returned
-                selected_cards = []
+                    to_be_removed.append(letter)
+
+            [dict_copy.pop(letter) for letter in to_be_removed]
                 
+            # With the possible letters 
+            if sum(list(dict_copy.values())) >= num:
+                selected_cards = []
+
                 for _ in range(num):
-                    random_index = randint(0, len(dict_copy.keys()) - 1)
-                    # print(random_index)
-                    dict_list = list(dict_copy.keys())
-                    letter = dict_list[random_index]
-                    if (self.__cards_amount_per_letter[letter] > 0):
-                        # print(letter)
-                        selected_cards.append(Card(letter))
-                        self.__cards_amount_per_letter[letter] -= 1
-                        if self.__cards_amount_per_letter[letter] == 0:
-                            dict_copy[letter] = 0
+                    while True:
+                        random_index = randint(0, len(dict_copy.keys()) - 1)
+                        dict_list = list(dict_copy.keys())
+                        letter = dict_list[random_index]
+                        # If there's the selected card
+                        # In case there's not, we will select another
+                        if self.__cards_amount_per_letter[letter] > 0:
+                            selected_cards.append(Card(letter))
+                            self.__cards_amount_per_letter[letter] -= 1
+                            dict_copy[letter] -= 1
+                            if dict_copy[letter] == 0:
+                                dict_copy.pop(letter)
+                            break
                 return selected_cards
             else:
-                #Not enough cards without exceptions
+                # Not enough cards without exceptions
                 raise NotEnoughCardsOnBagException
         else:
             #Not enough cards
             raise NotEnoughCardsOnBagException
-    
+            
     # def exhange_cards(cards_list: list):
     #     exceptions = []
     #     for card in cards_list:
@@ -98,8 +106,7 @@ class Bag:
         """
         Increments cards quantity and returns cards randomly selected from bag
         """
-        # print(self.__cards_amount_per_letter)
-        # print("LETRAS DOS CARDS = ", [card.letter for card in cards])
+        print(f'Running exchange_cards for {cards}')
         
         # Get random cards
         exceptions_set = set()
@@ -110,6 +117,7 @@ class Bag:
         # Put cards that came from the parameter in the bag
         for card in cards:
             self.__cards_amount_per_letter[card.letter] += 1
+            del card
 
         # print(self.__cards_amount_per_letter)
         return cards_return
