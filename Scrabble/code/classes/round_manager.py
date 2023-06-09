@@ -207,22 +207,33 @@ class RoundManager:
 
         if self.move_type == Move.CONSTRUCTION:
             print("CONSTRUCTION MOVE")
-            if not self.board.first_word:
-                # valida regras especiais da primeira palavra
-                if self.board.verify_first_word_rules():
-                    # seta no board que a primeira palavra agora foi criada
-                    self.board.first_word_created()
+            try:
+                if not self.board.first_word_created:
+                    self.board.verify_first_word_rules()
 
-            # valida regras gerais da palavra
-            if self.board.verify_valid_word():
+                # valida as regras gerais da palavra
+                self.board.verify_valid_word()
+                
+                if not self.board.first_word_created:
+                    self.board.first_word_created = True
+                
                 self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
-            else:
-                self.__player_interface.show_message(title='Palavra inválida', message="Palavra inválida!")
+
+                #TODO Aqui, verificar final do jogo
+                is_game_end = self.verify_game_end()
+                #TODO Aqui, enviar a palavra
+                
+
+            except Exception as e:
+                self.__player_interface.show_message(title='Palavra inválida', message=str(e))
 
         else:
             print("NOT CONSTRUCTION MOVE")
             self.__player_interface.show_message(title='Jogada inválida', message="Jogada inválida, é preciso formar uma palavra para submetê-la!")
 
+    def verify_game_end(self):
+        return self.local_player.dropouts == 2 and self.remote_player == 2 or self.board.bag.get_cards_amount() == 0
+    
     def reset_move(self):
         """
         Resets the move

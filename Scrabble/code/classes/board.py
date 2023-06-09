@@ -5,6 +5,7 @@ from constants.cards import CARDS_QUANTITY_BY_LETTER
 from constants.measures import BOARD_SIDE
 from constants.positions import TW, DW, DL, TL
 from classes.position import NormalPosition, DWPosition, DLPosition, TWPosition, TLPosition
+from classes.exceptions import FirstWordRulesNotRespectedException , WordNotConnectedException, WordDoesNotExistException
 
 class Board:
     def __init__(self):
@@ -32,7 +33,7 @@ class Board:
         self.__valid_words_search_dict = {}
 
         self.__positions = []
-        self.__first_word = False
+        self.__first_word_created = False
         # self.__premium_spots = [] # premium_spots = [('A', 'TLS'), ('B', 'DLS'), ('C', 'DLS'), ('D', 'DWS'), ('E', 'TLS')]
         # # TODO colocar essas listas como constantes, visto que também são utilizadas para a interface
         # tw = [(0,0), (0,7), (0,14), (7,0), (7,14), (14,0), (14,7), (14,14)]
@@ -67,8 +68,8 @@ class Board:
         return self.__valid_words_search_dict
     
     @property
-    def first_word(self):
-        return self.__first_word
+    def first_word_created(self):
+        return self.__first_word_created
 
     @property
     def premium_spots(self):
@@ -78,8 +79,9 @@ class Board:
     def current_adjacent_words_dict(self):
         return self.__current_adjacent_words_dict
     
-    def first_word_created(self):
-        self.__first_word = True
+    @first_word_created.setter
+    def first_word_created(self, created: bool):
+        self.__first_word_created = created
 
     def calculate_player_score(self):
         word = self.__current_word
@@ -121,19 +123,14 @@ class Board:
             return True
         else:
             print("AS REGRAS DE PRIMEIRA PALAVRA NÃO FORAM RESPEITADAS")
-            return False
+            raise FirstWordRulesNotRespectedException
     
-    def verify_valid_word(self):
+    def verify_valid_word(self) -> bool:
         print("VERIFICANDO AS REGRAS GERAIS DA PALAVRA!")
-
-        connected = self.verify_connected_positions()
+        self.verify_connected_positions()
         self.determine_adjacent_words()
-        valid = self.verify_words_existance_and_validity()
-
-        if connected and valid:
-            return True
-        else:
-            return False
+        self.verify_words_existance_and_validity()
+        return
 
     def verify_connected_positions(self):
         print("--VERIFICANDO CONEXÃO DOS CARDS DA PALAVRA")
@@ -152,14 +149,14 @@ class Board:
             fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
             
             if not fill:
-                print("--PALAVRA NÃO ESTÁ CONECTADA")
-                return False
+                print("--PALAVRA NÃO ESTÁ CONEXA")
+                raise WordNotConnectedException
             else:
-                print("--PALAVRA ESTÁ CONECTADA")
+                print("--PALAVRA ESTÁ CONEXA")
                 return True
         else:
             print("--Erro ao tentar encontrar direção da palavra.")
-            return False
+            raise WordNotConnectedException
     
     def determine_adjacent_words(self):
         """
@@ -199,7 +196,6 @@ class Board:
         #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord2]['horizontal'])
         
         # print("PALAVRAS ADJACENTES DETERMINADAS!")
-        return False
 
     def verify_words_existance_and_validity(self):
         print("verify_words_existance_and_validity")
@@ -210,7 +206,7 @@ class Board:
         print(f"--AVALIANDO A PALAVRA: {current_string}")
         if not self.__dictionary.search_word(current_string):
             print(f"PALAVRA {current_string} NÃO EXISTE!")
-            return False
+            raise WordDoesNotExistException
 
         for word in self.__current_adjacent_words_dict['adjacents']:
             adjacent_string = (word.get_string()).lower()
@@ -255,18 +251,18 @@ class Board:
                         direction = 'vertical'
                     else:
                         print("1 - verificação de mesma linha ou coluna NOP")
-                        return (False, None)
+                        raise WordNotConnectedException
             # entra aqui em todas as outras posições
             else:
                 if direction == 'horizontal':
                     if (position.coordinate[0] - line) != 0:
                         print("2 - verificação de mesma linha ou coluna NOP")
-                        return (False, None)
+                        raise WordNotConnectedException
 
                 if direction == 'vertical':
                     if (position.coordinate[1] - column) != 0:
                         print("3 - verificação de mesma linha ou coluna NOP")
-                        return (False, None)
+                        raise WordNotConnectedException
 
         print("verificação de mesma linha ou coluna OK")
         print(f"DIREÇÃO: {direction}")
@@ -313,4 +309,4 @@ class Board:
         return coords
     
     def reset_curr_adj_words_dict(self):
-        self.__current_adjacent_words_dict = {}
+        self.__current_adjacent_words_dict = {'current': None, 'adjacents': []}
