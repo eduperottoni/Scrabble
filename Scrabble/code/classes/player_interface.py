@@ -155,9 +155,10 @@ class PlayerInterface(DogPlayerInterface):
 			elif button_name == 'button(change)':
 				button.bind(
 					"<Button-1>",
-					lambda event: self.general_click(event,
-				      'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?',
-					  'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
+					lambda event: self.change_cards_from_pack(event))
+					# 	general_click(event,
+				    #   'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?',
+					#   'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
 			self.buttons[button_name]['btn_object'] = button
 	
 	#Drawing packs
@@ -268,6 +269,9 @@ class PlayerInterface(DogPlayerInterface):
 
 	def return_cards_to_pack(self, event):
 		self.round_manager.return_cards_to_pack()
+
+	def change_cards_from_pack(self, event):
+		self.round_manager.change_cards_from_pack()
 
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
@@ -451,6 +455,20 @@ class PlayerInterface(DogPlayerInterface):
 
 	def mark_off_card(self, index: int) -> None:
 		self.local_pack_cards[index].configure(bg=f'green')
+
+	def mark_change_button(self) -> None:
+		"""
+		Just change the color of the background of the button
+		"""
+		self.buttons['button(change)']['btn_object'].configure(bg="#a0a0a0")
+		
+
+	def mark_off_change_button(self) -> None:
+		"""
+		Just change the color of the background of the button
+		"""
+		self.buttons['button(change)']['btn_object'].configure(bg="#d9d9d9")
+		
 	
 
 	def __update_gui_players_names(self):
@@ -518,12 +536,12 @@ class PlayerInterface(DogPlayerInterface):
 			#TODO chamar o update da GUI
 
 	#TODO implementar método change_cards
-	def change_cards_from_pack():
+	# def change_cards_from_pack():
 		# try:
 		# 	self.RoundManager.change_cards_from_pack()
 		# except:
 		# 	self.__show_message("BAG COM PROBLEMA - NÃO TEM CARDS OU NÃO TEM CARDS SEM EXCEÇÕES")
-		pass
+		# pass
 
 	def select_card_from_pack(self, event) -> None:
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"

@@ -36,12 +36,15 @@ class Bag:
 
         :return: list of Cards objects
         """
+        # FIXME arrumar lógica
+        # print(num)
+        # print(exceptions)
         if self.get_cards_amount() >= num:
             # Calculating if there's card enough without exceptions
             dict_copy = self.__cards_amount_per_letter
             for letter, amount in dict_copy.items():
                 if amount == 0 or letter in exceptions:
-                    dict_copy.pop(letter)
+                    dict_copy[letter] = amount
             if sum(list(dict_copy.values())) > num:
                 # The list that will be returned
                 selected_cards = []
@@ -56,7 +59,7 @@ class Bag:
                         selected_cards.append(Card(letter))
                         self.__cards_amount_per_letter[letter] -= 1
                         if self.__cards_amount_per_letter[letter] == 0:
-                            dict_copy.pop(letter)
+                            dict_copy[letter] = 0
                 return selected_cards
             else:
                 #Not enough cards without exceptions
@@ -95,10 +98,21 @@ class Bag:
         """
         Increments cards quantity and returns cards randomly selected from bag
         """
+        # print(self.__cards_amount_per_letter)
+        # print("LETRAS DOS CARDS = ", [card.letter for card in cards])
+        
+        # Get random cards
         exceptions_set = set()
         for card in cards:
             exceptions_set.add(card.letter)
-        cards = self.get_random_cards(cards, list(exceptions_set))
+        cards_return = self.get_random_cards(len(cards), list(exceptions_set))
+
+        # Put cards that came from the parameter in the bag
+        for card in cards:
+            self.__cards_amount_per_letter[card.letter] += 1
+
+        # print(self.__cards_amount_per_letter)
+        return cards_return
 
     def __str__(self):
         return str(self.__cards_amount_per_letter)

@@ -92,6 +92,8 @@ class RoundManager:
         """
         remote_cards = self.__board.bag.get_random_cards(7)
         local_cards = self.__board.bag.get_random_cards(7)
+        print(local_cards)
+        print(remote_cards)
         self.local_player.pack.insert_cards(local_cards, [0,1,2,3,4,5,6])
         self.remote_player.pack.insert_cards(remote_cards, [0,1,2,3,4,5,6])
 
@@ -168,6 +170,7 @@ class RoundManager:
                 self.move_type = Move.CONSTRUCTION
             self.proceed_card_selection(index)
         else: self.__player_interface.show_message(title='Mensagem do DOG', message="CÊ TÁ MALUCO?")
+
     
     def proceed_card_selection(self, index: int):
         """
@@ -175,6 +178,9 @@ class RoundManager:
 
         :param index: index of the position of the pack clicked in GUI
         """
+        # self.move_type = Move.CHANGE                        # TESTE
+        print(index)
+
         pack = self.__local_player.pack
         if self.move_type == Move.CONSTRUCTION:
             any_selected = pack.any_cards_selected()
@@ -188,6 +194,17 @@ class RoundManager:
             pack.select_card(index)
             print(self.local_player.pack.current_selected_cards[0].letter)
             self.player_interface.mark_card(index)
+        elif self.move_type == Move.CHANGE:
+            is_selected = pack.is_current_card_selected(index)
+            if not is_selected:
+                pack.select_card(index)
+                self.player_interface.mark_card(index)
+            else:
+                pack.deselect_card(index)
+                self.player_interface.mark_off_card(index)
+
+            # print("PACK IS SELECTED?", pack.is_current_card_selected(index))
+
 
     def receive_move(self, move_type: Move, move_dict: dict):
         if move_type == Move.INITIAL:
@@ -251,7 +268,6 @@ class RoundManager:
         print('Running return_cards_to_pack')
         if self.local_player.is_turn:
             self.proceed_cards_returning()
-            self.reset_move()
         else:
             self.player_interface.show_message(title='INVALID OPERATION', message="It's not your turn")
 
@@ -290,6 +306,57 @@ class RoundManager:
             for index, empty_index in enumerate(empty_pack_indexes):
                 aux_dict[empty_index] = cards[index].letter
             self.player_interface.update_gui_local_pack(aux_dict)
+            print("===============================")
+            print(aux_dict)
+            print("===============================")
             
         else:
             self.player_interface.show_message(title='INVALID OPERATION', message="It's not alowed to return cards if the move is CHANGE")
+        
+    
+    def change_cards_from_pack(self, ):
+        """
+        Change cards main methos (called in the execution of the use case)
+        """
+        print('Running change_cards_from_pack')
+        if self.local_player.is_turn:
+            if self.move_type == Move.CHANGE:
+                self.proceed_change_cards()
+                self.reset_move()
+                self.player_interface.mark_off_change_button()
+                self.move_type = Move.CONSTRUCTION
+            else:
+                self.move_type = Move.CHANGE
+                self.player_interface.show_message(title='CHANGE MOVE', message="It's a changing move")
+                self.player_interface.mark_change_button()
+                # self.proceed_card_selection() # totalmente inutil
+
+        else:
+            self.player_interface.show_message(title='INVALID OPERATION', message="It's not your turn")
+
+    def proceed_change_cards(self):
+        selected_cards = self.local_player.pack.current_selected_cards
+        cards = self.__board.bag.exchange_cards(selected_cards)
+        # print("ARRAY_selected_cards = ", selected_cards)
+        # print("ARRAY_CARDS_BAG = ", cards)
+        # print("CARDS = ", self.local_player.pack.cards)
+
+        # EXCHANGE BAG CARDS WITH SELECTED_CARDS
+        # MARK_OFF SELECTED CARDS IN THE PACK
+        aux_dict = {}
+        for index, card in enumerate(self.local_player.pack.cards):
+            for card_selected in selected_cards:
+                if card_selected == card:
+                    self.local_player.pack.cards[index] = cards[0]
+                    self.player_interface.mark_off_card(index)
+                    aux_dict[index] = self.local_player.pack.cards[index].letter
+                    cards.pop(0)
+        self.player_interface.update_gui_local_pack(aux_dict)
+
+        # CLEAR SELECTED CARDS
+        selected_cards = []
+        # self.local_player.pack.remove_selected_cards()  # Nao funciona, não entendi funcionamento
+
+        # print("ARRAY_selected_cards1 = ", selected_cards)
+        # print("ARRAY_CARDS_BAG1 = ", cards)
+        # print("CARDS1 = ", self.local_player.pack.cards)
