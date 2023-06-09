@@ -58,8 +58,8 @@ class Bag:
                         # print(letter)
                         selected_cards.append(Card(letter))
                         self.__cards_amount_per_letter[letter] -= 1
-                        # if self.__cards_amount_per_letter[letter] == 0:
-                        #     dict_copy.pop(letter)
+                        if self.__cards_amount_per_letter[letter] == 0:
+                            dict_copy[letter] = 0
                 return selected_cards
             else:
                 #Not enough cards without exceptions

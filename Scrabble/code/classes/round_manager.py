@@ -92,6 +92,8 @@ class RoundManager:
         """
         remote_cards = self.__board.bag.get_random_cards(7)
         local_cards = self.__board.bag.get_random_cards(7)
+        print(local_cards)
+        print(remote_cards)
         self.local_player.pack.insert_cards(local_cards, [0,1,2,3,4,5,6])
         self.remote_player.pack.insert_cards(remote_cards, [0,1,2,3,4,5,6])
 
