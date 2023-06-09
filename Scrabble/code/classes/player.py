@@ -1,5 +1,5 @@
 from classes.pack import Pack
-import json
+import json 
 class Player:
     def __init__(self):
         self.__id = ''

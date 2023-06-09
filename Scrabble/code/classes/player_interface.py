@@ -149,9 +149,10 @@ class PlayerInterface(DogPlayerInterface):
 			elif button_name == 'button(giveup)':
 				button.bind(
 					"<Button-1>",
-					lambda event: self.general_click(event,
-				      'Passar a vez', 'Certeza que quer passar a vez?',
-					  'Trocando de turno', 'Voltando ao jogo'))
+					lambda event: self.give_up_round(event))
+					#    general_click(event,
+				    #   'Passar a vez', 'Certeza que quer passar a vez?',
+					#   'Trocando de turno', 'Voltando ao jogo'))
 			elif button_name == 'button(change)':
 				button.bind(
 					"<Button-1>",
@@ -272,6 +273,9 @@ class PlayerInterface(DogPlayerInterface):
 
 	def change_cards_from_pack(self, event):
 		self.round_manager.change_cards_from_pack()
+
+	def give_up_round(self, event):
+		self.round_manager.give_up_round()
 
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
