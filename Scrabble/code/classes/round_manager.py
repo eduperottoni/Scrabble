@@ -149,13 +149,14 @@ class RoundManager:
             self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
 
     def convert_move_to_dict(self):
-        if self.move_type == Move.GIVE_UP:
-            move = {}
         move = {}
         move['match_status'] = str(self.__match_state).replace('State.', '')
         move['move_type'] = str(self.__move_type).replace('Move.', '')
-        move['remote_player'] = self.__remote_player.convert_to_json()
-        move['local_player'] = self.__local_player.convert_to_json()
+        if self.move_type == Move.INITIAL:
+            move['remote_player'] = self.__remote_player.convert_to_json()
+            move['local_player'] = self.__local_player.convert_to_json()
+        elif self.move_type == Move.CONSTRUCTION:
+            move['match_status']
         return move
 
     def update_player_pack(self, player: Player, letters: 'list[str]', positions: 'list[int]') -> None:
@@ -250,10 +251,13 @@ class RoundManager:
                 
                 self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
 
+                #TODO preencher o pack do jogador local (que teve palavra validada)
                 #TODO Aqui, verificar final do jogo
                 is_game_end = self.verify_game_end()
-                #TODO Aqui, enviar a jogada
                 
+                #TODO Aqui, enviar a jogada
+                dict_json = self.convert_move_to_dict()
+                self.player_interface.send_move() 
 
             except Exception as e:
                 self.__player_interface.show_message(title='Palavra inválida', message=str(e))
