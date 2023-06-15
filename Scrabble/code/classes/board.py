@@ -31,6 +31,9 @@ class Board:
                     'vertical': <WORD_IN_0,1_VERTICAL>}}
         '''
         self.__valid_words_search_dict = {}
+        for i in range(15):
+            for j in range(15):
+                self.__valid_words_search_dict[(i, j)] = {'horizontal': None, 'vertical': None}
 
         self.__positions = []
         self.__first_word_created = False
@@ -130,6 +133,7 @@ class Board:
         self.verify_connected_positions()
         self.determine_adjacent_words()
         self.verify_words_existance_and_validity()
+        self.update_search_dict()
         return True
 
     def verify_connected_positions(self):
@@ -175,13 +179,16 @@ class Board:
         print("determine_adjacent_words")
         self.__current_adjacent_words_dict['current'] = self.current_word
         print(self.__current_adjacent_words_dict)
+        print(self.__valid_words_search_dict)
 
         #TODO: não tem como testar isso agora, só depois que der pra enviar a jogada pro outro jogador
         # for position in self.current_word.positions:
-        #     print("POSITION: ", position)
+        #     print("POSITION: ", position.coordinate)
         #     if self.current_word.direction == 'horizontal':
         #         coord1 = (position.coordinate[0], position.coordinate[1] + 1)
         #         coord2 = (position.coordinate[0], position.coordinate[1] - 1)
+        #         print(coord1)
+        #         print(coord2)
                 
         #         if self.__valid_words_search_dict[coord1]['vertical']:
         #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord1]['vertical'])
@@ -198,6 +205,52 @@ class Board:
         
         print("PALAVRAS ADJACENTES DETERMINADAS!")
         print("-----------------------------------------------")
+
+    def update_search_dict(self):
+        """
+        self.__current_adjacent_words_dict = 
+        {'current': Word,
+        'adjacents' = [Word, Word, Word]}
+
+        
+        self.__valid_words_search_dict =
+        {(0,0) : {'horizontal': <WORD_IN_0,0_HORIZONTAL>,
+                    'vertical': <WORD_IN_0,0_VERTICAL>},
+        (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
+                    'vertical': <WORD_IN_0,1_VERTICAL>}}
+        """
+        print("ENTRANDO NO UPDATE SEARCH DICT")
+        # current_adjacent_words = self.__current_adjacent_words_dict
+        current_word = self.__current_adjacent_words_dict['current']
+        direction = current_word.direction
+        for position in current_word.positions:
+            coordinate = position.coordinate
+            if direction == 'horizontal':
+                current_direction_key = 'horizontal'
+                adjacent_direction_key = 'vertical'
+            elif direction == 'vertical':
+                current_direction_key = 'vertical'
+                adjacent_direction_key = 'horizontal'
+
+            self.__valid_words_search_dict[coordinate][current_direction_key] = self.current_word
+
+        adjacents_words = self.__current_adjacent_words_dict['adjacents']
+        for word in adjacents_words:
+            positions_list = word.positions
+            for position in positions_list:
+                coordinate = position.coordinate
+                self.__valid_words_search_dict[coordinate][adjacent_direction_key] = word
+
+
+        for position in current_word.positions:
+            coordinate = position.coordinate
+            word = self.__valid_words_search_dict[coordinate][adjacent_direction_key]
+            if word == None:
+                self.__valid_words_search_dict[coordinate][adjacent_direction_key] = position.card.letter
+
+        print(self.current_adjacent_words_dict)
+        print(self.valid_words_search_dict)
+        print("TERMINOU UPDATE SEARCH DICT")
 
     def verify_words_existance_and_validity(self):
         print("verify_words_existance_and_validity")
