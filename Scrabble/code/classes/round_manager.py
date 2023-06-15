@@ -252,12 +252,34 @@ class RoundManager:
                 self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
 
                 #TODO preencher o pack do jogador local (que teve palavra validada)
+                indexes_empty_cards = self.local_player.pack.get_empty_indexes()
+                print("----------------------------------------------------------")
+                print("EMPTY INDEX:", indexes_empty_cards)
+
+                # pegar cards para por no pack local
+                board_cards = [position.card.letter for position in self.board.current_adjacent_words_dict["current"].positions]
+                cards = self.__board.bag.get_random_cards(len(board_cards), board_cards)
+                print("CARDS RAMDON PARA POR NO PACK:", [card.letter for card in cards])
+
+                aux_dict = {}
+                for index, index_empty in enumerate(indexes_empty_cards):
+                        print(index)
+                        print(index_empty)
+                        self.local_player.pack.cards[index_empty] = cards[index]
+                        aux_dict[index_empty] = self.local_player.pack.cards[index_empty].letter
+                self.player_interface.update_gui_local_pack(aux_dict)
+                aux_dict = {}
+                print("----------------------------------------------------------")
+
+                self.board.reset_curr_adj_words_dict()
+                self.board.current_word.reset()
+
                 #TODO Aqui, verificar final do jogo
-                is_game_end = self.verify_game_end()
+                # is_game_end = self.verify_game_end()
                 
-                #TODO Aqui, enviar a jogada
-                dict_json = self.convert_move_to_dict()
-                self.player_interface.send_move() 
+                # #TODO Aqui, enviar a jogada
+                # dict_json = self.convert_move_to_dict()
+                # self.player_interface.send_move() 
 
             except Exception as e:
                 self.__player_interface.show_message(title='Palavra inválida', message=str(e))

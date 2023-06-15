@@ -1,8 +1,8 @@
 from classes.exceptions import PositionAlreadyHasCardException
 from classes.exceptions import PositionDoesNotHaveCardException
 from classes.exceptions import CardNotSelectedException
-from classes.card import Card
-class Pack: 
+from classes.card import Card 
+class Pack:  
     def __init__(self):
         self.__cards = [None for _ in range(7)]
         self.__current_selected_cards = []
@@ -75,7 +75,6 @@ class Pack:
     def is_current_card_selected(self, index) -> bool:
         print(self.__cards[index])
         is_selected = self.__cards[index].selected
-        print("aaaaaa", is_selected)
         return is_selected
         
 

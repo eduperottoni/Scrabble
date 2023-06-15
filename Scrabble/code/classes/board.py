@@ -121,7 +121,7 @@ class Board:
         if more_then_one_card and card_in_center:
             print("TODAS AS REGRAS DE 1 PALAVRA FORAM RESPEITADAS")
             return True
-        else:
+        else: 
             print("AS REGRAS DE PRIMEIRA PALAVRA NÃO FORAM RESPEITADAS")
             raise FirstWordRulesNotRespectedException
     
@@ -171,13 +171,14 @@ class Board:
         (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
                     'vertical': <WORD_IN_0,1_VERTICAL>}}
         """
-
+        print("-----------------------------------------------")
         print("determine_adjacent_words")
-        
         self.__current_adjacent_words_dict['current'] = self.current_word
+        print(self.__current_adjacent_words_dict)
 
         #TODO: não tem como testar isso agora, só depois que der pra enviar a jogada pro outro jogador
         # for position in self.current_word.positions:
+        #     print("POSITION: ", position)
         #     if self.current_word.direction == 'horizontal':
         #         coord1 = (position.coordinate[0], position.coordinate[1] + 1)
         #         coord2 = (position.coordinate[0], position.coordinate[1] - 1)
@@ -195,7 +196,8 @@ class Board:
         #         elif self.__valid_words_search_dict[coord2]['horizontal']:
         #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord2]['horizontal'])
         
-        # print("PALAVRAS ADJACENTES DETERMINADAS!")
+        print("PALAVRAS ADJACENTES DETERMINADAS!")
+        print("-----------------------------------------------")
 
     def verify_words_existance_and_validity(self):
         print("verify_words_existance_and_validity")
