@@ -1,6 +1,7 @@
 from classes.card import Card
 from random import randint
 from classes.exceptions import NotEnoughCardsOnBagException
+import json
 
 class Bag:
     def __init__(self, cards_quantity_per_letter: dict):
@@ -20,6 +21,14 @@ class Bag:
         apenas a quantdade de cada um atualizada na bag. Quando solicitados
         novos cards, eles são criados.
         '''
+
+    @property
+    def cards_amount_per_letter(self):
+        return self.__cards_amount_per_letter
+    
+    @cards_amount_per_letter.setter
+    def cards_amount_per_letter(self, cards_amount_per_letter):
+        self.__cards_amount_per_letter = cards_amount_per_letter
 
     def get_cards_amount(self) -> int:
         """
@@ -124,3 +133,12 @@ class Bag:
 
     def __str__(self):
         return str(self.__cards_amount_per_letter)
+    
+
+    def convert_to_json(self):
+        a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+        # print(a)
+        json_string = a.replace("'", "\"").replace('_Bag__', '')
+        # print(json_string)
+        _json = json.loads(json_string)
+        return _json

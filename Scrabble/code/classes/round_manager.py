@@ -156,7 +156,10 @@ class RoundManager:
             move['remote_player'] = self.__remote_player.convert_to_json()
             move['local_player'] = self.__local_player.convert_to_json()
         elif self.move_type == Move.CONSTRUCTION:
-            move['match_status']
+            move['valid_word'] = self.board.current_word.convert_to_json()
+        elif self.move_type == Move.CHANGE:
+            # move['pack'] = self.local_player.pack.convert_to_json()
+            move['bag'] = self.board.bag.convert_to_json()
         return move
 
     def update_player_pack(self, player: Player, letters: 'list[str]', positions: 'list[int]') -> None:
@@ -166,6 +169,10 @@ class RoundManager:
         print(f'PACK DO JOGADOR {player.name} SENDO ATUALIZADO COM AS LETRAS {letters} NAS POSIÇÕES {positions}')
         cards = self.__board.bag.get_cards_by_letters(letters)
         player.pack.insert_cards(cards, positions)
+
+    def update_bag(self, cards_bag):
+        self.board.bag.cards_amount_per_letter = cards_bag
+        print(self.board.bag.cards_amount_per_letter)
 
     def select_card_from_pack(self, index: int):
         """
@@ -201,7 +208,7 @@ class RoundManager:
                 selected_index = pack.get_selected_card_index()
                 pack.deselect_all_cards()
                 self.player_interface.mark_off_card(selected_index)
-                print(self.local_player.pack.current_selected_cards)
+                # print(self.local_player.pack.current_selected_cards)
             # Selects the card
             pack.select_card(index)
             print(self.local_player.pack.current_selected_cards[0].letter)
@@ -220,7 +227,6 @@ class RoundManager:
 
             # print("PACK IS SELECTED?", pack.is_current_card_selected(index))
 
-
     def receive_move(self, move_type: Move, move_dict: dict):
         if move_type == Move.INITIAL:
             # Gets cards distribuited remotely and updates local instances
@@ -233,6 +239,19 @@ class RoundManager:
             self.move_type == Move.INITIAL
             self.state = State.IN_PROGRESS
             print(self.board.bag)
+        elif move_type == Move.CHANGE:
+            print("O tipo de jogada recebida é CHANGE")
+            cards_bag = move_dict['bag']['cards_amount_per_letter']
+            self.update_bag(cards_bag)
+            self.local_player.toogle_turn()
+            self.remote_player.toogle_turn()
+        elif move_type == Move.GIVE_UP:
+            print("O tipo de jogada recebida é O GIVE UP")
+            self.remote_player.dropouts += 1
+            print("LOCAL PLAYER DROUP_OUTS", self.local_player.dropouts)
+            print("REMOTE PLAYER DROUP_OUTS", self.remote_player.dropouts)
+            self.local_player.toogle_turn()
+            self.remote_player.toogle_turn()
     
     def submit_word(self):
         print("COMEÇANDO O SUBMIT WORD")
@@ -271,8 +290,6 @@ class RoundManager:
                 aux_dict = {}
                 print("----------------------------------------------------------")
 
-                self.board.reset_curr_adj_words_dict()
-                self.board.current_word.reset()
 
                 #TODO Aqui, verificar final do jogo
                 # is_game_end = self.verify_game_end()
@@ -280,6 +297,9 @@ class RoundManager:
                 # #TODO Aqui, enviar a jogada
                 # dict_json = self.convert_move_to_dict()
                 # self.player_interface.send_move() 
+
+                self.board.reset_curr_adj_words_dict()
+                self.board.current_word.reset()
 
             except Exception as e:
                 self.__player_interface.show_message(title='Palavra inválida', message=str(e))
@@ -297,8 +317,9 @@ class RoundManager:
         """
         if self.move_type != Move.GIVE_UP:
             self.local_player.dropouts = 0
+            self.remote_player.dropouts = 0
         self.board.current_word.reset()
-        self.local_player.pack.deselect_all_cards()
+        # self.local_player.pack.deselect_all_cards()
         self.board.reset_curr_adj_words_dict()
     
     def return_cards_to_pack(self):
@@ -363,6 +384,15 @@ class RoundManager:
                 self.proceed_change_cards()
                 self.reset_move()
                 self.player_interface.mark_off_change_button()
+
+                print('AQUI O LOG', self.move_type)
+                dict_json = self.convert_move_to_dict()
+                print('='*50)
+                print(dict_json)
+                print('='*50)
+                self.local_player.toogle_turn()
+                self.remote_player.toogle_turn()
+                self.__player_interface.dog_server_interface.send_move(dict_json)
                 self.move_type = Move.CONSTRUCTION
             else:
                 self.move_type = Move.CHANGE
@@ -393,7 +423,8 @@ class RoundManager:
         self.player_interface.update_gui_local_pack(aux_dict)
 
         # CLEAR SELECTED CARDS
-        selected_cards = []
+        self.local_player.pack.deselect_all_cards()
+
         # self.local_player.pack.remove_selected_cards()  # Nao funciona, não entendi funcionamento
 
         # print("ARRAY_selected_cards1 = ", selected_cards)
@@ -407,13 +438,24 @@ class RoundManager:
         self.local_player.dropouts += 1
         end = self.verify_game_end()
         if end:
-            print("Enviar jogada")
+            print("Enviar jogada give_up1")
             print("Restart game")
         else:
+            print("Enviar jogada give_up2")
             self.__match_state = State.WAITING_REMOTE_MOVE
-            print("Enviar jogada")
-            self.local_player.toogle_turn()
 
+        # desseleciona todos os cads do pack antes de enviar 
+        any_selected = self.local_player.pack.any_cards_selected()
+        if any_selected:
+            selected_index = self.local_player.pack.get_selected_card_index()
+            self.local_player.pack.deselect_all_cards()
+            self.player_interface.mark_off_card(selected_index)
+
+        self.local_player.toogle_turn()
+        self.remote_player.toogle_turn()
+        dict_json = self.convert_move_to_dict()
+        self.__player_interface.dog_server_interface.send_move(dict_json)
+        
 
     def verify_game_end(self):
         # move_type = self.__move_type
@@ -427,10 +469,10 @@ class RoundManager:
         if (self.local_player.dropouts == 2 and self.remote_player.dropouts == 2) or (self.board.bag.get_cards_amount() == 0 and self.local_player.pack.count_cards() == 0):
             if self.local_player.score >= self.remote_player.score:
                 self.player_interface.show_message(title='WINNER', message="Local Player Won!")
-                self.winner(self.local_player)
+                self.winner = self.local_player
             elif self.local_player.score < self.remote_player.score:
                 self.player_interface.show_message(title='WINNER', message="Remote Player Won!")
-                self.winner(self.remote_player)
+                self.winner = self.remote_player
             self.__match_state = State.FINISHED
             return True
         else:

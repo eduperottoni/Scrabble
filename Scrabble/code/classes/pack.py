@@ -2,6 +2,7 @@ from classes.exceptions import PositionAlreadyHasCardException
 from classes.exceptions import PositionDoesNotHaveCardException
 from classes.exceptions import CardNotSelectedException
 from classes.card import Card 
+import json
 class Pack:  
     def __init__(self):
         self.__cards = [None for _ in range(7)]
@@ -77,7 +78,13 @@ class Pack:
         is_selected = self.__cards[index].selected
         return is_selected
         
-
+    def convert_to_json(self):
+        a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+        json_string = a.replace("'", "\"").replace('_Pack__', '').replace('_Card__', '')
+        # print(json_string)
+        _json = json.loads(json_string)
+        return _json
+    
 
     # Just to make tests
     # def __str__(self):

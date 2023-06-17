@@ -1,4 +1,5 @@
 from classes.position import Position
+import json
 
 class Word:
     def __init__(self):
@@ -57,3 +58,9 @@ class Word:
         self.__positions = []
         self.__direction = ''
         return positions
+    
+    def convert_to_json(self):
+        move_dict = {'string': self.get_string(), 'positions': [p.coordinate for p in self.__positions]}
+        json_string =  json.dumps(move_dict)
+        _json = json.loads(json_string)
+        return _json

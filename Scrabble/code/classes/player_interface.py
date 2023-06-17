@@ -366,8 +366,13 @@ class PlayerInterface(DogPlayerInterface):
 			self.round_manager.receive_move(Move.INITIAL, a_move)
 			# Updates user interface
 			self.__update_gui(Move.INITIAL)
+		elif a_move['move_type'] == 'CHANGE':
+			# Passthe control to the round manager
+			self.round_manager.receive_move(Move.CHANGE, a_move)
+		elif a_move['move_type'] == 'GIVE_UP':
+			self.round_manager.receive_move(Move.GIVE_UP, a_move)
 		else:
-			print('O tipo de jogada recebida não é INITIAL')
+			print("not initial or change move")
 	
 	def __update_gui(self, move_type: Move = None) -> None:
 		#TODO if move_type == None: get RoundManager.move_type 

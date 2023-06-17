@@ -87,25 +87,35 @@ class Board:
         self.__first_word_created = created
 
     def calculate_player_score(self):
+        print("Entrando no calculate player score")
+        total_score = 0
         word = self.__current_word
+
         word_multiply_const = 1
-        pass
-        # word_score = 0
-        # for letter in self.current_word:
-        #     for spot in self.premium_spots:
-        #         if letter == spot[0]:
-        #             if spot[1] == "TLS":
-        #                 word_score += CARDS_VALUES_BY_LETTER[letter] * 3
-        #             elif spot[1] == "DLS":
-        #                 word_score += CARDS_VALUES_BY_LETTER[letter] * 2
-        #         else:
-        #             word_score += CARDS_VALUES_BY_LETTER[letter]
-        # for spot in self.premium_spots:
-        #     if spot[1] == "TWS":
-        #         word_score *= 3
-        #     elif spot[1] == "DWS":
-        #         word_score *= 2
-        # self.player.increase_score(word_score)
+        for position in word.positions:
+            if isinstance(position, DWPosition):
+                print("entrou DW")
+                word_multiply_const *= 2
+            if isinstance(position, TWPosition):
+                print("entrou TW")
+                word_multiply_const *= 3
+
+        for position in word.positions:
+            letter_multiply_const = 1 
+            if isinstance(position, DLPosition):
+                print("entrou DL")
+                letter_multiply_const *= 2
+            if isinstance(position, TLPosition):
+                print("entrou TL")
+                letter_multiply_const *= 3
+        
+            letter_Score = position.card.value
+            print("Valor da letra: ", letter_Score)
+            total_score += (letter_Score * letter_multiply_const * word_multiply_const)
+            print("total score:")
+            print(total_score)
+
+        return total_score
 
     def verify_first_word_rules(self):
         print("VERIFICANDO AS REGRAS DA PRIMEIRA PALAVRA")
@@ -133,6 +143,8 @@ class Board:
         self.verify_connected_positions()
         self.determine_adjacent_words()
         self.verify_words_existance_and_validity()
+        total = self.calculate_player_score()
+        print(total)
         self.update_search_dict()
         return True
 
@@ -185,18 +197,22 @@ class Board:
         # for position in self.current_word.positions:
         #     print("POSITION: ", position.coordinate)
         #     if self.current_word.direction == 'horizontal':
-        #         coord1 = (position.coordinate[0], position.coordinate[1] + 1)
-        #         coord2 = (position.coordinate[0], position.coordinate[1] - 1)
+        #         coord1 = (position.coordinate[0] + 1, position.coordinate[1])
+        #         coord2 = (position.coordinate[0] - 1, position.coordinate[1])
         #         print(coord1)
         #         print(coord2)
                 
         #         if self.__valid_words_search_dict[coord1]['vertical']:
         #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord1]['vertical'])
+        #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict['horizontal'][coord1])
         #         elif self.__valid_words_search_dict[coord2]['vertical']:
         #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord2]['vertical'])   
+        #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict['horizontal'][coord2])   
         #     elif self.current_word.direction == 'vertical':
-        #         coord1 = (position.coordinate[0] + 1, position.coordinate[1])
-        #         coord2 = (position.coordinate[0] - 1, position.coordinate[1])
+        #         coord1 = (position.coordinate[0], position.coordinate[1] + 1)
+        #         coord2 = (position.coordinate[0], position.coordinate[1] - 1)
+        #         print(coord1)
+        #         print(coord2)
                 
         #         if self.__valid_words_search_dict[coord1]['horizontal']:
         #             self.__current_adjacent_words_dict['adjacents'].append(self.__valid_words_search_dict[coord1]['horizontal'])
