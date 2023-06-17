@@ -143,7 +143,7 @@ class Board:
         print("VERIFICANDO AS REGRAS GERAIS DA PALAVRA!")
         self.verify_connected_positions()
         self.determine_adjacent_words()
-        self.verify_words_existance_and_validity()
+        # self.verify_words_existance_and_validity()
         # total = self.calculate_player_score()
         # print(total)
         self.update_search_dict()
@@ -190,10 +190,10 @@ class Board:
         """
         print("-----------------------------------------------")
         print("determine_adjacent_words")
-        self.__current_adjacent_words_dict['current'] = self.current_word
+        self.__current_adjacent_words_dict['current'] = copy.deepcopy(self.current_word)
         print(self.__current_adjacent_words_dict)
         print(self.__valid_words_search_dict)
-
+        #TODO: TESTAR SE O POSIÇÃO CORRENTE ESTÁ COM DADOS NO SEARCH_DICT. SE ESTIVER: NO PRECISO DAR APPEND COM ELA. CASO CONTRÁRIO, PRECISO DAR APPEND COM ELA.
         #TODO: não tem como testar isso agora, só depois que der pra enviar a jogada pro outro jogador
         for position in self.current_word.positions:
             print("POSITION: ", position.coordinate)
@@ -203,8 +203,8 @@ class Board:
                 # Coordenada acima
                 coord_above = (position.coordinate[0] - 1, position.coordinate[1])
 
-                already_valid_word_below = (self.__valid_words_search_dict[coord_below]['vertical']) if self.__valid_words_search_dict[coord_below]['vertical'] != None else None
-                already_valid_word_above = (self.__valid_words_search_dict[coord_above]['vertical']) if self.__valid_words_search_dict[coord_above]['vertical'] != None else None
+                already_valid_word_below = copy.deepcopy(self.__valid_words_search_dict[coord_below]['vertical']) if self.__valid_words_search_dict[coord_below]['vertical'] != None else None
+                already_valid_word_above = copy.deepcopy(self.__valid_words_search_dict[coord_above]['vertical']) if self.__valid_words_search_dict[coord_above]['vertical'] != None else None
                 print(f'PALAVRA JÁ VÁLIDA - VERTICAL abaixo:')
                 if already_valid_word_below:
                     for position in already_valid_word_below.positions:
@@ -233,38 +233,44 @@ class Board:
                 print(f'POSIÇÃO {coord_left}')
                 print(f'POSIÇÃO {coord_right}')
 
-                already_valid_word_left = (self.__valid_words_search_dict[coord_left]['horizontal']) if self.__valid_words_search_dict[coord_left]['horizontal'] != None else None
-                already_valid_word_right = (self.__valid_words_search_dict[coord_right]['horizontal']) if self.__valid_words_search_dict[coord_right]['horizontal'] != None else None
+                already_valid_word_left = copy.deepcopy(self.__valid_words_search_dict[coord_left]['horizontal']) if self.__valid_words_search_dict[coord_left]['horizontal'] != None else None
+                already_valid_word_right = copy.deepcopy(self.__valid_words_search_dict[coord_right]['horizontal']) if self.__valid_words_search_dict[coord_right]['horizontal'] != None else None
                 print(f'PALAVRA JÁ VÁLIDA - HORIZONTAL left:')
                 print(self.__valid_words_search_dict[coord_left]['horizontal'])
+                
                 if already_valid_word_left:
-                    print(self.__valid_words_search_dict[coord_left]['horizontal'].direction)
-                    print(already_valid_word_left)
-                    print(already_valid_word_left.direction)
-                    print(already_valid_word_left.positions)
-                    for position in already_valid_word_left.positions:
-                        print(position.card.letter)
+                #     print(self.__valid_words_search_dict[coord_left]['horizontal'].direction)
+                #     print(already_valid_word_left)
+                #     print(already_valid_word_left.direction)
+                #     print(already_valid_word_left.positions)
+                    for position1 in already_valid_word_left.positions:
+                        print(position1.card.letter)
                 print(f'PALAVRA JÁ VÁLIDA - HORIZONTAL right:')
                 print(self.__valid_words_search_dict[coord_right]['horizontal'])
                 if already_valid_word_right:
-                    print(self.__valid_words_search_dict[coord_right]['horizontal'].direction)
-                    print(already_valid_word_right)
-                    print(already_valid_word_right.direction)
-                    print(already_valid_word_right.positions)
-                    for position in already_valid_word_right.positions:
-                        print(position.card.letter)
+                #     print(self.__valid_words_search_dict[coord_right]['horizontal'].direction)
+                #     print(already_valid_word_right)
+                #     print(already_valid_word_right.direction)
+                #     print(already_valid_word_right.positions)
+                    for position2 in already_valid_word_right.positions:
+                        print(position2.card.letter)
                 if already_valid_word_left and already_valid_word_right:
                     already_valid_word_left.add_position(position)
                     [already_valid_word_left.add_position(position) for position in already_valid_word_right.positions]
                     self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
                 elif already_valid_word_left:
+                    print(position.coordinate)
                     already_valid_word_left.add_position(position)
                     self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
                 elif already_valid_word_right:
                     already_valid_word_right.add_position(position, 0)
-                    self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
+                    self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right) 
 
+        #TODO PEGAR A PALAVRA DE MESMA DIREÇÃO ANTERIOR E POSTERIOR  
+
+            print(f'LETRA DA POSIÇÃO: {position.card.letter}')
         print("PALAVRAS ADJACENTES DETERMINADAS!")
+
         print(self.__current_adjacent_words_dict['adjacents'])
         for word in self.__current_adjacent_words_dict['adjacents']:
             print(word.get_string())
@@ -285,7 +291,7 @@ class Board:
         """
         print("ENTRANDO NO UPDATE SEARCH DICT")
         # current_adjacent_words = self.__current_adjacent_words_dict
-        current_word = self.__current_adjacent_words_dict['current']
+        current_word = copy.deepcopy(self.__current_adjacent_words_dict['current'])
         direction = current_word.direction
         for position in current_word.positions:
             coordinate = position.coordinate
@@ -296,18 +302,18 @@ class Board:
                 current_direction_key = 'vertical'
                 adjacent_direction_key = 'horizontal'
 
-            self.__valid_words_search_dict[coordinate][current_direction_key] = self.current_word
+            self.__valid_words_search_dict[coordinate][current_direction_key] = current_word
             print(f'palavra {current_word} adicionada em {coordinate} -> {current_direction_key}')
             for position in self.current_word.positions: print(position.card.letter)
 
-        adjacents_words = self.__current_adjacent_words_dict['adjacents']
+        adjacents_words = copy.deepcopy(self.__current_adjacent_words_dict['adjacents'])
         for word in adjacents_words:
             positions_list = word.positions
             for position in positions_list:
                 coordinate = position.coordinate
                 self.__valid_words_search_dict[coordinate][adjacent_direction_key] = word
                 print(position.card.letter)
-            print(f'palavra {current_word} adicionada em {coordinate} -> {adjacent_direction_key}')
+            print(f'palavra {word} adicionada em {coordinate} -> {adjacent_direction_key}')
 
         for position in current_word.positions:
             coordinate = position.coordinate
