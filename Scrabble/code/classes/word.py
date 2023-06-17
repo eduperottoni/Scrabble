@@ -21,8 +21,9 @@ class Word:
     def positions(self, positions: list):
         self.__positions = positions
 
-    def add_position(self, position: Position):
-        self.__positions.append(position)
+    def add_position(self, position: Position, index: int = None) -> None:
+        if not index: self.__positions.append(position)
+        else: self.__positions.insert(index, position)
     
     def get_min_max_positions(self) -> 'tuple(Position, Position)':
         """
@@ -42,6 +43,7 @@ class Word:
         return (min_position, max_position)
 
     def get_string(self) -> str:
+        print('Running Word.get_string()')
         """
         Returns the Word in string format based on the Position.card.letter attribute
 
