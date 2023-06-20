@@ -1,6 +1,7 @@
 from classes.enums import State, Move
 from classes.player import Player
 from classes.board import Board
+from classes.card import Card
 from constants import messages
 from constants.positions import TW, DW, DL, TL
 from classes.position import TWPosition, DLPosition, DWPosition, TLPosition
@@ -252,6 +253,24 @@ class RoundManager:
             print("REMOTE PLAYER DROUP_OUTS", self.remote_player.dropouts)
             self.local_player.toogle_turn()
             self.remote_player.toogle_turn()
+        elif move_type == Move.CONSTRUCTION:
+            print("MOVE - CONSTRUCTION")
+            self.local_player.toogle_turn()
+            self.remote_player.toogle_turn()
+            string = move_dict['valid_word']['string']
+            positions = move_dict['valid_word']['positions']
+            for index, coord in enumerate(positions):
+                letter = string[index]
+                print(index)
+                print(coord)
+                card = Card(letter)
+                self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
+
+                position = self.board.positions[coord[0]][coord[1]]
+                position.card = card
+                position.disable()
+
+            print(move_dict)
     
     def submit_word(self):
         print("COMEÇANDO O SUBMIT WORD")
@@ -295,8 +314,11 @@ class RoundManager:
                 # is_game_end = self.verify_game_end()
                 
                 # #TODO Aqui, enviar a jogada
-                # dict_json = self.convert_move_to_dict()
-                # self.player_interface.send_move() 
+                # self.player_interface.send_move(dict_json) 
+                self.local_player.toogle_turn()
+                self.remote_player.toogle_turn()
+                dict_json = self.convert_move_to_dict()
+                self.__player_interface.dog_server_interface.send_move(dict_json)
 
                 self.board.reset_curr_adj_words_dict()
                 self.board.current_word.reset()

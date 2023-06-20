@@ -371,8 +371,10 @@ class PlayerInterface(DogPlayerInterface):
 			self.round_manager.receive_move(Move.CHANGE, a_move)
 		elif a_move['move_type'] == 'GIVE_UP':
 			self.round_manager.receive_move(Move.GIVE_UP, a_move)
+		elif a_move['move_type'] == 'CONSTRUCTION':
+			self.round_manager.receive_move(Move.CONSTRUCTION, a_move)
 		else:
-			print("not initial or change move")
+			print("not initial or change move or give_up or construction")
 	
 	def __update_gui(self, move_type: Move = None) -> None:
 		#TODO if move_type == None: get RoundManager.move_type 

@@ -63,6 +63,7 @@ class Word:
     
     def convert_to_json(self):
         move_dict = {'string': self.get_string(), 'positions': [p.coordinate for p in self.__positions]}
+        print(move_dict)
         json_string =  json.dumps(move_dict)
         _json = json.loads(json_string)
         return _json
