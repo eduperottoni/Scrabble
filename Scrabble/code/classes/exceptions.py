@@ -7,6 +7,7 @@ from constants.messages import NOT_YOUR_TURN_EXCEPTION_EXCEPTION
 from constants.messages import FIRST_WORD_RULES_NOT_RESPECTED_EXCEPTION
 from constants.messages import WORD_NOT_CONNECTED_EXCEPTION
 from constants.messages import WORD_DOES_NOT_EXIST_EXCEPTION
+from constants.messages import INVALID_OPERATION
 # from constants.messages import 
 
 class NotEnoughCardsOnBagException(Exception):
@@ -49,6 +50,9 @@ class NotYourTurnException(Exception):
         self.message = NOT_YOUR_TURN_EXCEPTION_EXCEPTION
         super().__init__(self.message)
 
-
+class InvalidOperation(Exception):
+    def __init__(self):
+        self.message = INVALID_OPERATION
+        super().__init__(self.message)
 
          

@@ -6,7 +6,6 @@ class Dictionary:
         self.__valid_words = []
         self.__trie = Trie()
         self.__trie.load_file('src/dictionary/br-sem-acentos.txt')
-        print('ÁRVORE CARREGADA')
 
     @property
     def valid_words(self):
@@ -14,6 +13,7 @@ class Dictionary:
 
     @valid_words.setter
     def valid_words(self, words_list: 'list[str]'):
+        print('2: ', type(words_list))
         self.__valid_words = words_list
     
     def is_valid(self, word: str) -> bool:
@@ -26,6 +26,7 @@ class Dictionary:
     
     def set_new_valid_word(self, word: str):
         # Set new word already in board
+        print(type(self.__valid_words))
         self.__valid_words.append(word)
     
     def convert_to_json(self):

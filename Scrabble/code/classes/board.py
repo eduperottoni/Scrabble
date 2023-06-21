@@ -92,73 +92,53 @@ class Board:
         self.__first_word_created = created
 
     def calculate_player_score(self):
-        print("Entrando no calculate player score")
         total_score = 0
         word = self.__current_word
 
         word_multiply_const = 1
         for position in word.positions:
-            if isinstance(position, DWPosition):
-                print("entrou DW")
-                word_multiply_const *= 2
-            if isinstance(position, TWPosition):
-                print("entrou TW")
-                word_multiply_const *= 3
+            if isinstance(position, DWPosition): word_multiply_const *= 2
+            if isinstance(position, TWPosition): word_multiply_const *= 3
 
         for position in word.positions:
             letter_multiply_const = 1 
-            if isinstance(position, DLPosition):
-                print("entrou DL")
-                letter_multiply_const *= 2
-            if isinstance(position, TLPosition):
-                print("entrou TL")
-                letter_multiply_const *= 3
+            if isinstance(position, DLPosition): letter_multiply_const *= 2
+            if isinstance(position, TLPosition): letter_multiply_const *= 3
         
             letter_Score = position.card.value
-            print("Valor da letra: ", letter_Score)
             total_score += (letter_Score * letter_multiply_const * word_multiply_const)
-            print("total score:")
-            print(total_score)
 
         return total_score
 
     def verify_first_word_rules(self):
-        print("VERIFICANDO AS REGRAS DA PRIMEIRA PALAVRA")
-
         # verificar se há um card no centro do tabuleiro
         card_in_center = False
         for position in self.__current_word.positions:
-            print(position.coordinate)
             if position.coordinate == (7, 7):
-                print("EXISTE UM CARD NO CENTRO")
                 card_in_center = True
                 break
-    
+
         more_then_one_card = True if len(self.__current_word.positions) > 1 else False
 
         if more_then_one_card and card_in_center:
-            print("TODAS AS REGRAS DE 1 PALAVRA FORAM RESPEITADAS")
             return True
-        else: 
-            print("AS REGRAS DE PRIMEIRA PALAVRA NÃO FORAM RESPEITADAS")
+        else:
             raise FirstWordRulesNotRespectedException
-    
+
+
     def verify_valid_word(self) -> bool:
-        print("VERIFICANDO AS REGRAS GERAIS DA PALAVRA!")
         self.verify_connected_positions()
         self.determine_adjacent_words()
-        # self.verify_words_existance_and_validity()
+        self.verify_words_existance_and_validity()
         self.update_search_dict()
+
         return True
 
     def verify_connected_positions(self):
-        print("--VERIFICANDO CONEXÃO DOS CARDS DA PALAVRA")
-
         aux = self.verify_current_word_same_line_or_column()
         direction = aux[1]
         
         if direction != None:
-            print(f"---A PALAVRA ESTÁ NA {aux[1]}")
             self.current_word.direction = direction
             max_min_positions = self.current_word.get_min_max_positions()
             
@@ -167,14 +147,9 @@ class Board:
             
             fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
             
-            if not fill:
-                print("--PALAVRA NÃO ESTÁ CONEXA")
-                raise WordNotConnectedException
-            else:
-                print("--PALAVRA ESTÁ CONEXA")
-                return True
+            if not fill: raise WordNotConnectedException
+            else: return True
         else:
-            print("--Erro ao tentar encontrar direção da palavra.")
             raise WordNotConnectedException
     
     def determine_adjacent_words(self):
@@ -190,19 +165,15 @@ class Board:
         (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
                     'vertical': <WORD_IN_0,1_VERTICAL>}}
         """
-        print("-----------------------------------------------")
-        print("determine_adjacent_words")
         current_word = copy.deepcopy(self.current_word)
         self.__current_adjacent_words_dict['current'] = current_word
-        # print(self.__valid_words_search_dict)
+
         #TODO: TESTAR SE O POSIÇÃO CORRENTE ESTÁ COM DADOS NO SEARCH_DICT. SE ESTIVER: NO PRECISO DAR APPEND COM ELA. CASO CONTRÁRIO, PRECISO DAR APPEND COM ELA.
         #TODO: não tem como testar isso agora, só depois que der pra enviar a jogada pro outro jogador
         search_dict = self.__valid_words_search_dict
         for position in self.current_word.positions:
-            print("POSITION: ", position.coordinate)
             already_in_board = search_dict[position.coordinate]['horizontal'] or search_dict[position.coordinate]['vertical']
             if not already_in_board:
-                print(f'LETRA {position.card.letter}, da posição {position.coordinate} não estava no board anteriormente')    
                 if current_word.direction == 'horizontal':
                     # Coordenada abaixo
                     coord_below = (position.coordinate[0] + 1, position.coordinate[1])
@@ -211,14 +182,7 @@ class Board:
 
                     already_valid_word_below = copy.deepcopy(self.__valid_words_search_dict[coord_below]['vertical']) if self.__valid_words_search_dict[coord_below]['vertical'] != None else None
                     already_valid_word_above = copy.deepcopy(self.__valid_words_search_dict[coord_above]['vertical']) if self.__valid_words_search_dict[coord_above]['vertical'] != None else None
-                    print(f'PALAVRA JÁ VÁLIDA - VERTICAL abaixo:')
-                    if already_valid_word_below:
-                        for position in already_valid_word_below.positions:
-                            print(position.card.letter)
-                    print(f'PALAVRA JÁ VÁLIDA - VERTICAL acima:')
-                    if already_valid_word_above:
-                        for position in already_valid_word_above.positions:
-                            print(position.card.letter)
+
                     if already_valid_word_below and already_valid_word_above:
                         already_valid_word_above.add_position(position)
                         [already_valid_word_above.add_position(position) for position in already_valid_word_below.positions]
@@ -231,84 +195,45 @@ class Board:
                         self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
                 
                 elif current_word.direction == 'vertical':
-                    print(f'POSIÇÃO {position.coordinate}')
                     # Coordenada esquerda
                     coord_left = (position.coordinate[0], position.coordinate[1] - 1)
                     # Coordenada direita
                     coord_right = (position.coordinate[0], position.coordinate[1] + 1)
-                    print(f'POSIÇÃO {coord_left}')
-                    print(f'POSIÇÃO {coord_right}')
 
                     already_valid_word_left = copy.deepcopy(self.__valid_words_search_dict[coord_left]['horizontal']) if self.__valid_words_search_dict[coord_left]['horizontal'] != None else None
                     already_valid_word_right = copy.deepcopy(self.__valid_words_search_dict[coord_right]['horizontal']) if self.__valid_words_search_dict[coord_right]['horizontal'] != None else None
-                    print(f'PALAVRA JÁ VÁLIDA - HORIZONTAL left:')
-                    print(self.__valid_words_search_dict[coord_left]['horizontal'])
-                    
-                    if already_valid_word_left:
-                    #     print(self.__valid_words_search_dict[coord_left]['horizontal'].direction)
-                    #     print(already_valid_word_left)
-                    #     print(already_valid_word_left.direction)
-                    #     print(already_valid_word_left.positions)
-                        for position1 in already_valid_word_left.positions:
-                            print(position1.card.letter)
-                    print(f'PALAVRA JÁ VÁLIDA - HORIZONTAL right:')
-                    print(self.__valid_words_search_dict[coord_right]['horizontal'])
-                    if already_valid_word_right:
-                    #     print(self.__valid_words_search_dict[coord_right]['horizontal'].direction)
-                    #     print(already_valid_word_right)
-                    #     print(already_valid_word_right.direction)
-                    #     print(already_valid_word_right.positions)
-                        for position2 in already_valid_word_right.positions:
-                            print(position2.card.letter)
+
                     if already_valid_word_left and already_valid_word_right:
                         already_valid_word_left.add_position(position)
                         [already_valid_word_left.add_position(position) for position in already_valid_word_right.positions]
                         self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
                     elif already_valid_word_left:
-                        print(position.coordinate)
                         already_valid_word_left.add_position(position)
                         self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
                     elif already_valid_word_right:
                         already_valid_word_right.add_position(position, 0)
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right) 
-
-            print(f'LETRA DA POSIÇÃO: {position.card.letter}')
+                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right)
 
         #TODO PEGAR A PALAVRA DE MESMA DIREÇÃO ANTERIOR E POSTERIOR  
         max_min_positions = current_word.get_min_max_positions()
         direction = current_word.direction
-        print(f'MIN AND MAX POSITIONS')
+
         min_pos = max_min_positions[0]
         max_pos = max_min_positions[1]
+
         if direction == 'horizontal':
             inf_coord = (min_pos.coordinate[0], min_pos.coordinate[1] - 1)
             sup_coord = (max_pos.coordinate[0], max_pos.coordinate[1] + 1)
         else:
             inf_coord = (min_pos.coordinate[0] - 1, min_pos.coordinate[1])
             sup_coord = (max_pos.coordinate[0] + 1, max_pos.coordinate[1])
-        print(self.__valid_words_search_dict)
+
         inf_word = self.__valid_words_search_dict[inf_coord][direction]
         sup_word = self.__valid_words_search_dict[sup_coord][direction]
-        print(inf_coord)
-        print(sup_coord)
-        print(direction)
-        print("PALAVRAS QUE SERÃO CONCATENADAS")
-        if inf_word: print(inf_word.get_string())
-        if sup_word: print(sup_word.get_string())
-        if current_word: print(current_word.get_string())
+
         new_current = Word.concatenate(inf_word, current_word, sup_word)
         self.__current_adjacent_words_dict['current'] = new_current
-        
-        
-        print("PALAVRAS ADJACENTES DETERMINADAS!")
-        print("PALAVRA ATUAL")
-        print(self.__current_adjacent_words_dict['current'].get_string())
-        print(self.__current_adjacent_words_dict['current'].direction)
-        print("PALAVRAS ADJACENTES")
-        print(self.__current_adjacent_words_dict['adjacents'])
-        for word in self.__current_adjacent_words_dict['adjacents']:
-            print(word.get_string())
-        print("-----------------------------------------------")
+
 
     def update_search_dict(self):
         """
@@ -323,12 +248,10 @@ class Board:
         (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
                     'vertical': <WORD_IN_0,1_VERTICAL>}}
         """
-        print("ENTRANDO NO UPDATE SEARCH DICT")
+
         # current_adjacent_words = self.__current_adjacent_words_dict
         current_word = self.__current_adjacent_words_dict['current']
-        print(self.__current_adjacent_words_dict['current'])
-        print(self.__current_adjacent_words_dict['current'].direction)
-        print(f"direção da palavra para conferência -> {current_word.direction}")
+
         direction = current_word.direction
         current_direction_key = ''
         adjacent_direction_key = ''
@@ -342,8 +265,6 @@ class Board:
                 adjacent_direction_key = 'horizontal'
             self.__valid_words_search_dict[coordinate][current_direction_key] = current_word
             self.__valid_words_search_dict[coordinate][adjacent_direction_key] = Word([position])
-            print(f'palavra {current_word} adicionada em {coordinate} -> {current_direction_key}')
-            print(current_word.get_string())
 
         adjacents_words = copy.deepcopy(self.__current_adjacent_words_dict['adjacents'])
         for word in adjacents_words:
@@ -351,8 +272,6 @@ class Board:
             for position in positions_list:
                 coordinate = position.coordinate
                 self.__valid_words_search_dict[coordinate][adjacent_direction_key] = word
-                print(f'palavra {word} adicionada em {coordinate} -> {adjacent_direction_key}')
-                print(word.get_string())
 
         for position in current_word.positions:
             coordinate = position.coordinate
@@ -362,33 +281,19 @@ class Board:
                 new_word.add_position(position)
                 self.__valid_words_search_dict[coordinate][adjacent_direction_key] = word
 
-        # print(self.current_adjacent_words_dict)
-        # print(self.valid_words_search_dict)
-        print("TERMINOU UPDATE SEARCH DICT")
-        print(self.valid_words_search_dict)
-        print(self.bag)
-        print(self.dictionary.valid_words)
 
     def verify_words_existance_and_validity(self):
-        print("verify_words_existance_and_validity")
-
-        print(f'--palavra atual: ')
-        print([position.card.letter for position in self.__current_adjacent_words_dict["current"].positions])
         current_string = (self.__current_adjacent_words_dict['current'].get_string()).lower()
-        print(f"--AVALIANDO A PALAVRA: {current_string}")
+
         already_valid_words = self.__dictionary.valid_words
         if not self.__dictionary.search_word(current_string) and current_string not in already_valid_words:
-            print(f"PALAVRA {current_string} NÃO EXISTE!")
             raise WordDoesNotExistException
 
         for word in self.__current_adjacent_words_dict['adjacents']:
             adjacent_string = word.get_string().lower()
-            print(f"--AVALIANDO A PALAVRA: {adjacent_string}")
             if not self.__dictionary.search_word(adjacent_string) and current_string not in already_valid_words:
-                print(f"PALAVRA {adjacent_string} NÃO EXISTE!")
                 raise WordDoesNotExistException
 
-        print("PALAVRAS VÁLIDADAS NO DICIONÁRIO!")
         self.__dictionary.set_new_valid_word(current_string)
         for word in self.__current_adjacent_words_dict['adjacents']:
             adjacent_string = word.get_string().lower()
@@ -401,8 +306,6 @@ class Board:
         Called whenever a submission of word is running
         Returns if the current word's cards are positioned in same line or column in the board
         """
-        #TODO: mudar no diagrama pq a lógica mudou
-        print('Running verify_current_word_same_line_or_column')
         word = self.current_word
         line = None
         column = None
@@ -428,44 +331,37 @@ class Board:
                     if same_column == 0:
                         direction = 'vertical'
                     else:
-                        print("1 - verificação de mesma linha ou coluna NOP")
                         raise WordNotConnectedException
             # entra aqui em todas as outras posições
             else:
                 if direction == 'horizontal':
                     if (position.coordinate[0] - line) != 0:
-                        print("2 - verificação de mesma linha ou coluna NOP")
                         raise WordNotConnectedException
 
                 if direction == 'vertical':
                     if (position.coordinate[1] - column) != 0:
-                        print("3 - verificação de mesma linha ou coluna NOP")
                         raise WordNotConnectedException
 
-        print("verificação de mesma linha ou coluna OK")
-        print(f"DIREÇÃO: {direction}")
         return (True, direction)
-    
-    def verify_positions_filling(self, min_position: tuple, max_position: tuple) -> bool:
-        print(min_position, max_position)
 
+
+    def verify_positions_filling(self, min_position: tuple, max_position: tuple) -> bool:
         all_coords = self.generate_coords(min_coord=min_position, max_coord=max_position, direction=self.current_word.direction)
-        print(f'Coordenadas geradas pelo generate_copordenates : {all_coords}')
+
         for index, coord in enumerate(all_coords):
             position = self.get_position(board_coord=coord)
 
             if position.is_enabled:
-                print(f"{position.coordinate}")
-                print("verificação de palavra totalmente conexa ERRO")
                 return False
             elif position not in self.__current_word.positions:
                 self.__current_word.add_position(position, index)
 
-        print("verificação de palavra totalmente conexa OK")
         return True
-    
+
+
     def get_position(self, board_coord: tuple):
         return self.__positions[board_coord[0]][board_coord[1]]
+
 
     def generate_coords(self, min_coord: tuple, max_coord: tuple, direction: str) -> list:
         """
@@ -476,36 +372,31 @@ class Board:
 
         if direction == 'horizontal':
             for x in range(min_coord[1], max_coord[1]+1):
-                print((max_coord[0], x))
                 coords.append((max_coord[0], x))
 
         elif direction == 'vertical':
             for y in range(min_coord[0], max_coord[0]+1):
-                print((y, min_coord[1]))
                 coords.append((y, min_coord[1]))
 
         return coords
-    
+
+
     def reset_curr_adj_words_dict(self):
         self.__current_adjacent_words_dict = {'current': None, 'adjacents': []}
 
     def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag_cards: 'dict[str, int]') -> None:
         for index, coord in enumerate(positions):
             letter = string[index]
-            print(f'LETTER A SER PEGA NA BAG -> {letter}')
             card_obj = Card(letter)
-            print(f'CARD GERADO -> {card_obj}')
-            print(f'letra do CARD GERADO -> {card_obj.letter}')
+
             position = self.positions[coord[0]][coord[1]]
             position.card = card_obj
             position.disable()
+
             self.current_word.add_position(position)
+
         self.current_word.direction = direction
-        print('BAG ANTES DO UPDATE DE QUEM RECEBE')
-        print(self.bag.cards_amount_per_letter) 
         self.bag.cards_amount_per_letter = bag_cards
-        print('BAG DEPOIS DO UPDATE DE QUEM RECEBE')
-        print(self.bag.cards_amount_per_letter)
         self.dictionary.valid_words = dict_valid_words
         # valida as regras gerais da palavra
         self.determine_adjacent_words()

@@ -45,7 +45,6 @@ class Bag:
 
         :return: list of Cards objects
         """
-        print(f'Running get_random_cards to catch: {num} cards with the following exceptions: {exceptions}')
         if self.get_cards_amount() >= num:
             # Calculating if there's card enough without exceptions
             dict_copy = self.__cards_amount_per_letter.copy()
@@ -78,10 +77,8 @@ class Bag:
                             break
                 return selected_cards
             else:
-                # Not enough cards without exceptions
                 raise NotEnoughCardsOnBagException
         else:
-            #Not enough cards
             raise NotEnoughCardsOnBagException
             
     # def exhange_cards(cards_list: list):
@@ -90,6 +87,7 @@ class Bag:
     #         exceptions.append(card.letter)
     #         del card
     #     cards_to_return = self.get_random_cards
+
 
     def get_cards_by_letters(self, letters: list) -> 'list[Card]':
         """
@@ -102,23 +100,20 @@ class Bag:
         # 1 - Card's quantity validation
         for letter in letters:
             if self.__cards_amount_per_letter[letter] == 0:
-                print('ERRRO AQUIIIIII')
-                print(letter)
-                print(self.__cards_amount_per_letter[letter])
                 raise NotEnoughCardsOnBagException
         # 2 - Getting cards
         cards = []
         for letter in letters:
             cards.append(Card(letter))
             self.__cards_amount_per_letter[letter] -= 1
+
         return cards
-    
+
+
     def exchange_cards(self, cards: 'list[Card]') -> 'list[Card]':
         """
         Increments cards quantity and returns cards randomly selected from bag
-        """
-        print(f'Running exchange_cards for {cards}')
-        
+        """        
         # Get random cards
         exceptions_set = set()
         for card in cards:
@@ -130,8 +125,8 @@ class Bag:
             self.__cards_amount_per_letter[card.letter] += 1
             del card
 
-        # print(self.__cards_amount_per_letter)
         return cards_return
+
 
     def __str__(self):
         return str(self.__cards_amount_per_letter)
@@ -140,10 +135,10 @@ class Bag:
     #     for letter, amount in bag_cards.items():
     #         self.cards_amount_per_letter[letter] = int(amount)
 
+
     def convert_to_json(self) -> dict:
         a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-        # print(a)
         json_string = a.replace("'", "\"").replace('_Bag__', '')
-        # print(json_string)
         _json = json.loads(json_string)
+
         return _json

@@ -81,6 +81,7 @@ class RoundManager:
         self.local_player.initialize(players['local']['id'], players['local']['name'])
         self.remote_player.initialize(players['remote']['id'], players['remote']['name'])
 
+
     def start_game(self, players: dict) -> None:
         """
         Define the players and their turn (who starts the match)
@@ -90,20 +91,16 @@ class RoundManager:
                                                     'turn': True or False}}
         """
         self.configure_players(players)
-        print(players)
         self.__match_state = State.IN_PROGRESS
-        print(f'estado do jogo setado como {self.match_state}')
         self.__move_type = Move.INITIAL
-        print(f'tipo de movimento setado como {self.move_type}')
         self.__distribute_cards()
+
         if players['local']['turn']:
-            print('VEZ DE JOGAR É DO JOGADOR LOCAL')
             self.local_player.toogle_turn()
         else:
             self.remote_player.toogle_turn()
-            print('VEZ É DO JOGADOR REMOTO')
             self.__match_state = State.WAITING_REMOTE_MOVE
-        print(self.__board.bag)
+
 
     def __distribute_cards(self):
         """
@@ -111,10 +108,10 @@ class RoundManager:
         """
         remote_cards = self.__board.bag.get_random_cards(7)
         local_cards = self.__board.bag.get_random_cards(7)
-        print(local_cards)
-        print(remote_cards)
+
         self.local_player.pack.insert_cards(local_cards, [0,1,2,3,4,5,6])
         self.remote_player.pack.insert_cards(remote_cards, [0,1,2,3,4,5,6])
+
 
     def select_board_position(self, coord: tuple) -> int:
         """
@@ -123,17 +120,13 @@ class RoundManager:
         :param coord: tuple indicating the position selectd
         :return int: 0 if the operation is invalid, 1 if the operation is valid 
         """
-        print(f'Posição selecionada: {coord}')
-        print(f'Estado do round-manager: {self.__match_state}')
         if self.local_player.is_turn:
             if self.move_type == Move.CONSTRUCTION:
                 if self.local_player.pack.any_cards_selected:
-                    print(f'TEMOS ALGUM CARD SELECIONADO -> {self.local_player.pack.any_cards_selected()}')
-                    print(coord[0], coord[1])
                     position = self.board.positions[coord[0]][coord[1]]
                     card = self.local_player.pack.current_selected_cards[0]
-                    if position.is_enabled:
 
+                    if position.is_enabled:
                         self.player_interface.update_gui_board_positions({(coord[0], coord[1]): card.letter})
                         
                         # desabilita o card do board pra não poder mais adicionar lá
@@ -146,48 +139,51 @@ class RoundManager:
 
                         # adicionando a posição na currrent word
                         self.board.current_word.add_position(position)
-                        print(f'adicionando {position.card.letter} na palavra')
-                        print(f'palavra atual = {self.board.current_word.positions}')
                         palavra = self.board.current_word.get_string()
                     else:
-                        self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, "Posição já ocupada")
+                        raise PositionAlreadyHasCardException
                 else:
-                    self.player_interface.show_message("", "")
+                    raise CardNotSelectedException
             else:
-                self.player_interface.show_message("", "")
+                raise InvalidOperation
         else:
-            self.player_interface.show_message(messages.ERROR_INVALID_OPERATION_TITLE, messages.ERROR_OPERATION_BEFORE_START)
+            raise NotYourTurnException
+
 
     def convert_move_to_dict(self):
         move = {}
         move['match_status'] = str(self.__match_state).replace('State.', '')
         move['move_type'] = str(self.__move_type).replace('Move.', '')
+
         if self.move_type == Move.INITIAL:
             move['remote_player'] = self.__remote_player.convert_to_json()
             move['local_player'] = self.__local_player.convert_to_json()
             move['bag'] = self.board.bag.convert_to_json()
+
         elif self.move_type == Move.CONSTRUCTION:
             move['valid_word'] = self.board.current_word.convert_to_json()
             move['dict_valid_words'] = self.board.dictionary.convert_to_json()
             move['bag'] = self.board.bag.convert_to_json()
-            print('O QUE FOI ENVIADO COMO BAG')
-            print(move['bag']['cards_amount_per_letter'])
+            move['player_score'] = self.local_player.convert_to_json()
+
         elif self.move_type == Move.CHANGE:
             # move['pack'] = self.local_player.pack.convert_to_json()
             move['bag'] = self.board.bag.convert_to_json()
+
         return move
+
 
     def update_player_pack(self, player: Player, letters: 'list[str]', positions: 'list[int]') -> None:
         """
         Sets local player pack (in case the remote made the INITIAL move)
         """
-        print(f'PACK DO JOGADOR {player.name} SENDO ATUALIZADO COM AS LETRAS {letters} NAS POSIÇÕES {positions}')
         cards = self.__board.bag.get_cards_by_letters(letters)
         player.pack.insert_cards(cards, positions)
 
+
     def update_bag(self, cards_bag):
         self.board.bag.cards_amount_per_letter = cards_bag
-        print(self.board.bag.cards_amount_per_letter)
+
 
     def select_card_from_pack(self, index: int):
         """
@@ -195,15 +191,12 @@ class RoundManager:
 
         :param index: index of the position of the pack selected in GUI
         """
-        print('LOCAL')
-        print(self.__local_player)
-        print('REMOTE')
-        print(self.__remote_player)
         if self.__local_player.is_turn:
             if self.move_type != Move.CHANGE:
                 self.move_type = Move.CONSTRUCTION
             self.proceed_card_selection(index)
-        else: self.__player_interface.show_message(title='Mensagem do DOG', message="CÊ TÁ MALUCO?")
+
+        else: raise NotYourTurnException
 
     
     def proceed_card_selection(self, index: int):
@@ -212,27 +205,22 @@ class RoundManager:
 
         :param index: index of the position of the pack clicked in GUI
         """
-        # self.move_type = Move.CHANGE                        # TESTE
-        print(index)
-
         pack = self.__local_player.pack
+
         if self.move_type == Move.CONSTRUCTION:
             any_selected = pack.any_cards_selected()
             if any_selected:
-                # Gets the current selected card index
+                #: gets the current selected card index
                 selected_index = pack.get_selected_card_index()
                 pack.deselect_all_cards()
                 self.player_interface.mark_off_card(selected_index)
-                # print(self.local_player.pack.current_selected_cards)
-            # Selects the card
+
             pack.select_card(index)
-            print(self.local_player.pack.current_selected_cards[0].letter)
-            print(f'CARDS SELECIONADOS NO PROCEED CARD SELECTION: {self.local_player.pack.current_selected_cards}')
             self.player_interface.mark_card(index)
+
         elif self.move_type == Move.CHANGE:
             is_selected = pack.is_current_card_selected(index)
-            print(f'ESTÁ SELECIONADO? {is_selected}')
-            print(f'LISTA DE CARDS SELECIONADOS: {self.local_player.pack.current_selected_cards}')
+
             if not is_selected:
                 pack.select_card(index)
                 self.player_interface.mark_card(index)
@@ -240,53 +228,62 @@ class RoundManager:
                 pack.deselect_card(index)
                 self.player_interface.mark_off_card(index)
 
-            # print("PACK IS SELECTED?", pack.is_current_card_selected(index))
 
     def receive_move(self, move_type: Move, move_dict: dict):
         if move_type == Move.INITIAL:
             # Gets cards distribuited remotely and updates local instances
-            print('O tipo de jogada recebida é INITIAL')
             local_initial_letters = [card['letter'] for card in move_dict['remote_player']['pack']['cards']]
             remote_initial_letters = [card['letter'] for card in move_dict['local_player']['pack']['cards']]
+
             self.update_player_pack(self.local_player, local_initial_letters, range(len(local_initial_letters)))
             self.update_player_pack(self.remote_player, remote_initial_letters, range(len(remote_initial_letters)))
+
             # Updates state and move type
             self.move_type == Move.INITIAL
             self.state = State.IN_PROGRESS
-            print(self.board.bag)
+
         elif move_type == Move.CHANGE:
-            print("O tipo de jogada recebida é CHANGE")
             cards_bag = move_dict['bag']['cards_amount_per_letter']
             self.update_bag(cards_bag)
+
             self.local_player.toogle_turn()
             self.remote_player.toogle_turn()
+
+            self.__player_interface.show_message(title='Jogada recebida', message="O outro jogador trocou de letras. É sua vez de jogar!")
+
         elif move_type == Move.GIVE_UP:
-            print("O tipo de jogada recebida é O GIVE UP")
             self.remote_player.dropouts += 1
-            print("LOCAL PLAYER DROUP_OUTS", self.local_player.dropouts)
-            print("REMOTE PLAYER DROUP_OUTS", self.remote_player.dropouts)
+
             self.local_player.toogle_turn()
             self.remote_player.toogle_turn()
+
+            self.__player_interface.show_message(title='Jogada recebida', message="O outro jogador passou a vez. É sua vez de jogar!")
+
         elif move_type == Move.CONSTRUCTION:
-            print("MOVE - CONSTRUCTION")
             string = move_dict['valid_word']['string']
             positions = move_dict['valid_word']['positions']
             direction = move_dict['valid_word']['direction']
             bag_cards = move_dict['bag']['cards_amount_per_letter']
-            dict_valid_words = move_dict['dict_valid_words']
+            dict_valid_words = move_dict['dict_valid_words']['valid_words']
+            remote_player_score = move_dict['player_score']['score']
+
             self.board.update(string, positions, direction, dict_valid_words, bag_cards)
+
             for index, coord in enumerate(positions):
                 self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
+            
             self.local_player.toogle_turn()
             self.remote_player.toogle_turn()
-            print(move_dict)
+
+            self.remote_player.score = remote_player_score
+            self.player_interface.update_gui_players_score()
+
             self.reset_move()
+
+            self.__player_interface.show_message(title='Jogada recebida', message="Sua vez de jogar!")
     
     def submit_word(self):
-        print("COMEÇANDO O SUBMIT WORD")
-
         if self.move_type == Move.CONSTRUCTION:
-            print("CONSTRUCTION MOVE")
             try:
                 if not self.board.first_word_created:
                     self.board.verify_first_word_rules()
@@ -298,50 +295,41 @@ class RoundManager:
                     self.board.first_word_created = True
 
                 total = self.board.calculate_player_score()
-                self.local_player.score = total
-                print(f'SCORE DO PLAYER -> {total}')
+                self.local_player.score += total
                 
                 self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
 
-                #TODO preencher o pack do jogador local (que teve palavra validada)
+                # preenchendo o pack do jogador
                 indexes_empty_cards = self.local_player.pack.get_empty_indexes()
-                print("----------------------------------------------------------")
-                print("EMPTY INDEX:", indexes_empty_cards)
-
-                # pegar cards para por no pack local
                 board_cards = [position.card.letter for position in self.board.current_adjacent_words_dict["current"].positions]
                 cards = self.__board.bag.get_random_cards(len(board_cards), board_cards)
-                print("CARDS RAMDON PARA POR NO PACK:", [card.letter for card in cards])
 
                 aux_dict = {}
                 for index, index_empty in enumerate(indexes_empty_cards):
-                        print(index)
-                        print(index_empty)
                         self.local_player.pack.cards[index_empty] = cards[index]
                         aux_dict[index_empty] = self.local_player.pack.cards[index_empty].letter
+
                 self.player_interface.update_gui_local_pack(aux_dict)
                 self.player_interface.update_gui_players_score()
                 aux_dict = {}
-                print("----------------------------------------------------------")
 
-
-                #TODO Aqui, verificar final do jogo
+                # verificar final do jogo
                 # is_game_end = self.verify_game_end()
-                
-                # #TODO Aqui, enviar a jogada
-                # self.player_interface.send_move(dict_json) 
+
                 self.local_player.toogle_turn()
                 self.remote_player.toogle_turn()
+
                 dict_json = self.convert_move_to_dict()
                 self.__player_interface.dog_server_interface.send_move(dict_json)
 
+                self.__player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
                 self.reset_move()
+
             except Exception as e:
                 # TODO CHAMAR AQUI O RETURN_CARDS_TO_PACK
                 self.__player_interface.show_message(title='Palavra inválida', message=str(e))
 
         else:
-            print("NOT CONSTRUCTION MOVE")
             self.__player_interface.show_message(title='Jogada inválida', message="Jogada inválida, é preciso formar uma palavra para submetê-la!")
     
     def reset_move(self):
@@ -359,19 +347,18 @@ class RoundManager:
         """
         Return cards main methos (called in the execution of the use case)
         """
-        print('Running return_cards_to_pack')
         if self.local_player.is_turn:
             self.proceed_cards_returning()
         else:
-            self.player_interface.show_message(title='INVALID OPERATION', message="It's not your turn")
+            raise NotYourTurnException
 
     def proceed_cards_returning(self):
         if self.move_type != Move.CHANGE:
             positions = self.board.current_word.positions
+
             coordinates = []
             for position in positions:
                 coordinates.append(position.coordinate)
-            print(self.board.current_word.positions)
 
             positions = self.board.current_word.reset()
             board_coordinates = [position.coordinate for position in positions]
@@ -380,7 +367,7 @@ class RoundManager:
             [position.reset() for position in positions]
             self.local_player.pack.insert_cards(cards, empty_pack_indexes)
 
-            print(f'Running proceed cards returning to {board_coordinates} and {empty_pack_indexes}')
+            #: verificação das posições do board (se for uma posição especial é preciso reiniciar como especial)
             aux_dict = {}
             for index, position in enumerate(positions):
                 coordinate = board_coordinates[index]
@@ -392,59 +379,46 @@ class RoundManager:
                 elif coordinate == (7,7): coord_type = '*'
                 else: coord_type = 'NORMAL' 
                 aux_dict[coordinate] = coord_type
-                #TODO check if the position is special. If it is, we have to pass the corresponding special string
-            print(f'Before call update_gui_board_position() -> {aux_dict}')
+
             self.player_interface.update_gui_board_positions(aux_dict)
+            
             aux_dict = {}
-            print(empty_pack_indexes)
             for index, empty_index in enumerate(empty_pack_indexes):
                 aux_dict[empty_index] = cards[index].letter
             self.player_interface.update_gui_local_pack(aux_dict)
-            print("===============================")
-            print(aux_dict)
-            print("===============================")
             
         else:
-            self.player_interface.show_message(title='INVALID OPERATION', message="It's not alowed to return cards if the move is CHANGE")
+            self.player_interface.show_message(title='Jogada inválida', message="Não é permitido retornar os cards em uma jogada de troca de cards!")
         
-    def change_cards_from_pack(self, ):
+    def change_cards_from_pack(self):
         """
         Change cards main methos (called in the execution of the use case)
         """
-        print('Running change_cards_from_pack')
         if self.local_player.is_turn:
             if self.move_type == Move.CHANGE:
                 self.proceed_change_cards()
                 self.reset_move()
                 self.player_interface.mark_off_change_button()
 
-                print('AQUI O LOG', self.move_type)
                 dict_json = self.convert_move_to_dict()
-                print('='*50)
-                print(dict_json)
-                print('='*50)
+
                 self.local_player.toogle_turn()
                 self.remote_player.toogle_turn()
                 self.__player_interface.dog_server_interface.send_move(dict_json)
                 self.move_type = Move.CONSTRUCTION
+                self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
             else:
                 self.move_type = Move.CHANGE
-                self.player_interface.show_message(title='CHANGE MOVE', message="It's a changing move")
+                self.player_interface.show_message(title='Troca de letras', message="Selecione as letras que deseja trocar")
                 self.player_interface.mark_change_button()
-                # self.proceed_card_selection() # totalmente inutil
-
+                # self.proceed_card_selection() #: totalmente inutil
         else:
-            self.player_interface.show_message(title='INVALID OPERATION', message="It's not your turn")
+            raise NotYourTurnException
 
     def proceed_change_cards(self):
         selected_cards = self.local_player.pack.current_selected_cards
         cards = self.__board.bag.exchange_cards(selected_cards)
-        print("ARRAY_selected_cards = ", selected_cards)
-        print("ARRAY_CARDS_BAG = ", cards)
-        print("CARDS = ", self.local_player.pack.cards)
 
-        # EXCHANGE BAG CARDS WITH SELECTED_CARDS
-        # MARK_OFF SELECTED CARDS IN THE PACK
         aux_dict = {}
         for index, card in enumerate(self.local_player.pack.cards):
             for card_selected in selected_cards:
@@ -453,16 +427,10 @@ class RoundManager:
                     self.player_interface.mark_off_card(index)
                     aux_dict[index] = self.local_player.pack.cards[index].letter
                     cards.pop(0)
+
         self.player_interface.update_gui_local_pack(aux_dict)
 
-        # CLEAR SELECTED CARDS
         self.local_player.pack.deselect_all_cards()
-
-        # self.local_player.pack.remove_selected_cards()  # Nao funciona, não entendi funcionamento
-
-        # print("ARRAY_selected_cards1 = ", selected_cards)
-        # print("ARRAY_CARDS_BAG1 = ", cards)
-        # print("CARDS1 = ", self.local_player.pack.cards)
 
 
     def give_up_round(self):
@@ -473,12 +441,12 @@ class RoundManager:
             self.local_player.dropouts += 1
             end = self.verify_game_end()
             if end:
-                print("Enviar jogada give_up1")
+                # TODO: restart game
                 print("Restart game")
             else:
-                print("Enviar jogada give_up2")
                 self.__match_state = State.WAITING_REMOTE_MOVE
-            # desseleciona todos os cads do pack antes de enviar 
+
+            #: desseleciona todos os cads do pack antes de enviar 
             any_selected = self.local_player.pack.any_cards_selected()
             if any_selected:
                 selected_index = self.local_player.pack.get_selected_card_index()
@@ -489,10 +457,11 @@ class RoundManager:
             self.remote_player.toogle_turn()
             dict_json = self.convert_move_to_dict()
             self.__player_interface.dog_server_interface.send_move(dict_json)
-        else:
-            raise NotYourTurnException
+            
+            self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
 
-        
+        else:
+            raise NotYourTurnException 
         
 
     def verify_game_end(self):

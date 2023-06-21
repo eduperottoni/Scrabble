@@ -26,12 +26,14 @@ class Pack:
         for index, position in enumerate(coords):
             if self.__cards[position] != None: raise PositionAlreadyHasCardException
             else: self.__cards[position] = cards[index]
-    
+
+
     def select_card(self, index: int) -> None:
         if self.__cards[index] == None: raise PositionDoesNotHaveCardException
         else: 
             self.__cards[index].self_select()
             self.__current_selected_cards.append(self.__cards[index])
+
 
     def deselect_card(self, index: int) -> None:
         if self.__cards[index] == None: raise PositionDoesNotHaveCardException
@@ -40,25 +42,31 @@ class Pack:
             self.__cards[index].self_unselect()
             self.__current_selected_cards.remove(self.__cards[index])
 
+
     def reset(self):
         self.__cards = [None for _ in range(7)]
         self.__current_selected_cards = []
 
+
     def count_cards(self) -> int:
         return len(self.__cards)
-    
+
+
     def deselect_all_cards(self) -> None:
         [selected.self_unselect() for selected in self.__current_selected_cards]
         self.__current_selected_cards = []
-    
+
+
     def get_selected_card_index(self) -> int:
         return self.__cards.index(self.__current_selected_cards[0])
-    
+
+
     def get_empty_indexes(self):
         indexes = []
         for index, card in enumerate(self.cards):
             if not card: indexes.append(index)
         return indexes
+
 
     def remove_selected_cards(self) -> 'list[int]':
         indexes = []
@@ -67,22 +75,23 @@ class Pack:
             card.self_disable()
             self.__cards[index] = None
             indexes.append(index)
-            print(f'REMOVENDO CARDS DO ÍNDICE {index}')
+
         self.__current_selected_cards = []
-        print(self.__current_selected_cards)
-        print(self.__cards)
+
         return indexes
-    
+
+
     def is_current_card_selected(self, index) -> bool:
-        print(self.__cards[index])
         is_selected = self.__cards[index].selected
+
         return is_selected
-        
+
+
     def convert_to_json(self):
         a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
         json_string = a.replace("'", "\"").replace('_Pack__', '').replace('_Card__', '')
-        # print(json_string)
         _json = json.loads(json_string)
+
         return _json
     
 

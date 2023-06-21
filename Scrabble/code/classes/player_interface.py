@@ -101,7 +101,6 @@ class PlayerInterface(DogPlayerInterface):
 			self.__images['CARDS'][f'{letter}'] = self.__load_card_img(letter, self.board_size/self.board_side)
 		for position in POSITIONS_RGB.keys():
 			self.__images['POSITIONS'][f'{position}'] = self.__load_position_img(position, self.board_size/self.board_side)
-		print('Cards and positions images loaded')
 
 
 	def __load_position_img(self, pos_type: str, size: int) -> ImageTk.PhotoImage:
@@ -129,12 +128,14 @@ class PlayerInterface(DogPlayerInterface):
 		image = self.__load_img(f'{RELATIVE_PATH}_{letter.upper()}.png', int(size)-6)
 		return image
 
+
 	#Drawing button
 	def __draw_button(self, btn_text: str, width: float, height: float, position: tuple, main_frame: Frame, name: str) -> Button: 
 		new_button = Button(main_frame, text=btn_text, name=name)
 		new_button.place(x=position[0], y=position[1])
 		return new_button
-	
+
+
 	def __draw_buttons(self):
 		for button_name, button_config in self.buttons.items():
 			button = self.__draw_button(button_config['btn_description'], None, None, button_config['btn_position'], self.local_player_frame, button_name)
@@ -161,13 +162,13 @@ class PlayerInterface(DogPlayerInterface):
 				    #   'Trocar de cards', 'Certeza que quer trocar os cards do seu pack?',
 					#   'Cards serão selecionados e a troca ocorrerá', 'Voltando ao jogo'))
 			self.buttons[button_name]['btn_object'] = button
-	
+
+
 	#Drawing packs
 	def __draw_packs(self, pack_size: tuple, card_size: float):
 		font = interface.FONT_PLAYERS_NAMES
 		position_bg = interface.BG_PACKS_POSITIONS
 		player_name = interface.INITIAL_PLAYER_NAME
-
 
 		self.frame_remote_pack = Frame(self.remote_player_frame, width=pack_size[0], height=pack_size[1])
 		self.frame_local_pack = Frame(self.local_player_frame, width=pack_size[0], height=pack_size[1])
@@ -190,7 +191,8 @@ class PlayerInterface(DogPlayerInterface):
 			label = self.__draw_card(new_local_pack_pos, card_size, 'A')
 			label.id = f'local{i}, A'
 			self.local_pack_cards.append(label)
-	
+
+
 	# drawing the 255 positions of the board
 	def __draw_board(self, position_size: int, board_side: int):
 		RELATIVE_PATH = 'src/images/positions/scrabble'
@@ -247,12 +249,14 @@ class PlayerInterface(DogPlayerInterface):
 
 			# Iserting line on positions matrix
 			self.board_positions.append(positions_line)
-	
+
+
 	#click event in positions of the board
 	def click(self, event, main_message: str, message: str, color: str):
 		messagebox.showinfo(f'{main_message}', \
 							f'{message}: {(str(event.widget)).split(".")[-1]}')
 		event.widget.configure(bg=f'{color}')
+
 
 	#click event in the buttons
 	def general_click(self, event, main_message: str, ask_message: str, affirm_message: str, negat_message: str):
@@ -265,14 +269,27 @@ class PlayerInterface(DogPlayerInterface):
 			messagebox.showinfo('', \
 		       					negat_message)
 
+
 	def submit_word(self, event):
-		self.round_manager.submit_word()
+		try:
+			self.round_manager.submit_word()
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao submeter palavra -> {e}')
+
 
 	def return_cards_to_pack(self, event):
-		self.round_manager.return_cards_to_pack()
+		try:
+			self.round_manager.return_cards_to_pack()
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
+
 
 	def change_cards_from_pack(self, event):
-		self.round_manager.change_cards_from_pack()
+		try:
+			self.round_manager.change_cards_from_pack()
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao trocar cards do pack -> {e}')
+
 
 	def give_up_round(self, event):
 		try:
@@ -280,10 +297,12 @@ class PlayerInterface(DogPlayerInterface):
 		except Exception as e:
 			self.show_message("ERRO", f'Erro ao desistir da partida -> {e}')
 
+
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
 		return True if answer == 'yes' else False
-	
+
+
 	def show_message(self, title: str, message: str) -> None:
 		messagebox.showinfo(title=title, message=message)
 
@@ -306,7 +325,8 @@ class PlayerInterface(DogPlayerInterface):
 		)
 		card.pack()
 		return card
-	
+
+
 	# Drawing scores (using Canvas widget)
 	def __draw_score(self, main_frame: Frame, size: tuple, position: tuple) -> Canvas:
 		# TODO definir essas variáveis como globais, para que fique tudo paramétrico
@@ -322,15 +342,14 @@ class PlayerInterface(DogPlayerInterface):
 
 		new_score.place(x=position[0], y=position[1])
 		return label_score
-	
+
+
 	# Starting game (com o DOG)
 	def start_game(self) -> None:
 		# Se o estado do jogo estiver em NOT_INITIALIZED
 		if (self.round_manager.match_state == State.NOT_INITIALIZED):
-			print('ESTADO DO JOGO É VÁLIDO PARA SEU INÍCIO')
 			answer = self.__askquestion(messages.START_MATCH_TITLE, messages.START_MACTH_QUESTION)
 			if answer:
-				print('ENVIANDO PEDIDO DE INÍCIO DO JOGO AO SERVIDOR')
 				start_status = self.__dog_server_interface.start_match(2)
 				code = start_status.get_code()
 				message = start_status.get_message()
@@ -339,46 +358,41 @@ class PlayerInterface(DogPlayerInterface):
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 				else:
 					players_response = start_status.get_players()
-					print(players_response)
+
 					# Building player dict and order list to pass as parameter in RoundManager.start_match()
 					players = self.__status_response_to_dict(players_response)
-					print('2 JOGADORES ENCONTRADOS PARA INÍCIO DO JOGO')
+
 					self.round_manager.start_game(players)
 					#TODO Não podemos fazer isso, temos que conferir se a partida está em andamento (se foi iniciada) no clique
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
-					
-					
-					print('AQUI O LOG', self.round_manager.move_type)
+
 					dict_json = self.round_manager.convert_move_to_dict()
-					print('='*50)
-					print(dict_json)
-					print('='*50)
+
 					self.dog_server_interface.send_move(dict_json)
-					print('JOGADA INICIAL ENVIADA')
+
 					self.update_gui_local_pack()
 					self.__update_gui_players_names()
-		print(self.round_manager.local_player.is_turn)
-		print(self.round_manager.remote_player.is_turn)
+
 
 	def receive_move(self, a_move: dict) -> None:
-		print('='*50)
-		print(f'JOGADA SENDO RECEBIDA = {a_move}')
 		if a_move['move_type'] == 'INITIAL':
 			# Passthe control to the round manager
 			self.round_manager.receive_move(Move.INITIAL, a_move)
 			# Updates user interface
 			self.__update_gui(Move.INITIAL)
+
 		elif a_move['move_type'] == 'CHANGE':
 			# Passthe control to the round manager
 			self.round_manager.receive_move(Move.CHANGE, a_move)
+
 		elif a_move['move_type'] == 'GIVE_UP':
 			self.round_manager.receive_move(Move.GIVE_UP, a_move)
+		
 		elif a_move['move_type'] == 'CONSTRUCTION':
 			self.round_manager.receive_move(Move.CONSTRUCTION, a_move)
-		else:
-			print("not initial or change move or give_up or construction")
-	
-	def update_gui(self, move_type: Move = None) -> None:
+
+
+	def __update_gui(self, move_type: Move = None) -> None:
 		#TODO if move_type == None: get RoundManager.move_type 
 		if move_type == Move.INITIAL:
 			# Atualizar nomes dos jogadores
@@ -386,7 +400,8 @@ class PlayerInterface(DogPlayerInterface):
 			# Atualizar pack local
 			self.update_gui_local_pack()
 			self.__update_gui_players_names()
-			self.__update_gui_players_score()
+			self.update_gui_players_score()
+
 
 	def update_gui_players_score(self):
 		local_score = self.round_manager.local_player.score
@@ -399,12 +414,9 @@ class PlayerInterface(DogPlayerInterface):
 	# 	self.board_positions[coord[0]][coord[1]].configure(image=new_image)
 	# 	self.board_positions[coord[0]][coord[1]].image = new_image
 
+
 	def update_gui_board_positions(self, coords_letters: dict):
-		print(f'Running update_gui_board_position para {coords_letters}')
 		for coord, letter in coords_letters.items():
-			print(f'-- Changing {coord} for {letter}')
-			print("Image position", self.__images['POSITIONS'])
-			print("Image cards", self.__images['CARDS'])
 			if letter == 'TW':
 				new_image = self.__images['POSITIONS']['TW']
 			elif letter == 'DW':
@@ -428,7 +440,6 @@ class PlayerInterface(DogPlayerInterface):
 		#TODO Fazer uma otimização aqui: Por que atualizar tudo se apenas 2 letras mudarem?
 		if indexes_letters:
 			for index, letter in indexes_letters.items():
-				print(f'-- Updating local_pack[{index}] para {letter}')
 				new_image = self.__images['CARDS'][letter] if letter != 'NORMAL' else self.__images['POSITIONS']['NORMAL']
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
@@ -459,6 +470,7 @@ class PlayerInterface(DogPlayerInterface):
 		# 	for i, pack_index in enumerate(pack_indexes):
 		# 		print(f'{self.local_pack_cards[pack_index].cget("image")}')
 
+
 	def mark_card(self, index: int) -> None:
 		"""
 		Just change the color of the background of the Label in local pack
@@ -468,6 +480,7 @@ class PlayerInterface(DogPlayerInterface):
 
 	def mark_off_card(self, index: int) -> None:
 		self.local_pack_cards[index].configure(bg=f'green')
+
 
 	def mark_change_button(self) -> None:
 		"""
@@ -483,14 +496,12 @@ class PlayerInterface(DogPlayerInterface):
 		self.buttons['button(change)']['btn_object'].configure(bg="#d9d9d9")
 		
 	
-
 	def __update_gui_players_names(self):
 		self.label_remote_player.configure(text=f'{self.round_manager.remote_player.name}') 
 		self.label_local_player.configure(text=f'{self.round_manager.local_player.name}')
 
 
 	def __status_response_to_dict(self, response: list):
-		print(response)
 		dict = {'local': 
 					{'id': response[0][1],
 					'name': response[0][0],
@@ -501,7 +512,8 @@ class PlayerInterface(DogPlayerInterface):
 					'turn': True if response[1][2] == '1' else False}
 				}
 		return dict
-	
+
+
 	def select_board_position(self, event) -> None:
 		"""
 		Method to handle with selected board position
@@ -509,34 +521,36 @@ class PlayerInterface(DogPlayerInterface):
 
 		:param event: event generxated by click in position
 		"""
-		label_name = event.widget.winfo_name()
-		print(label_name)
-		coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
-		coord_tuple = (int(coord_list[0]), int(coord_list[1]))
-		self.round_manager.select_board_position(coord_tuple)
+		try:
+			label_name = event.widget.winfo_name()
+
+			coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
+			coord_tuple = (int(coord_list[0]), int(coord_list[1]))
+
+			self.round_manager.select_board_position(coord_tuple)
+
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao selecionar posição do tabuleiro -> {e}')
+
 
 	#Receiving game's start from DOG
 	def receive_start(self, start_status: StartStatus) -> None:
 		self.reset_game()
 		players_response = start_status.get_players()
-		print('RECEBENDO GAME START')
 		players = self.__status_response_to_dict(players_response)
-		print(players_response)
-		print(players['local']['turn'])
 		self.round_manager.configure_players(players)
+	
 		if players['local']['turn']:
-			print('VEZ DO JOGADOR LOCAL')
 			#TODO tratar aqui, as vezes nenhum jogador fica com a vez
 			self.round_manager.local_player.toogle_turn()
 			self.round_manager.match_state = State.IN_PROGRESS
 		else:
-			print('VEZ DO JOGADOR REMOTO')
 			self.round_manager.remote_player.toogle_turn()
 			self.round_manager.match_state = State.WAITING_REMOTE_MOVE
+
 		# self.round_manager.start_game(players)
 		message = start_status.get_message()
-		print(self.round_manager.local_player.is_turn)
-		print(self.round_manager.remote_player.is_turn)
+
 		self.show_message(title='Mensagem do DOG', message=message)
 		#TODO pegar game config
 		#TODO chamar o update da interface
@@ -558,8 +572,11 @@ class PlayerInterface(DogPlayerInterface):
 
 	def select_card_from_pack(self, event) -> None:
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"
-		print(f'AQUI ESTAMOS => {pack_index}')
-		self.round_manager.select_card_from_pack(int(pack_index))
+		try:
+			self.round_manager.select_card_from_pack(int(pack_index))
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao selecionar letra -> {e}')
+
 
 	# def receive_withdrawal_notification(self):
 	# 	self.board.receive_withdrawal_notification()
