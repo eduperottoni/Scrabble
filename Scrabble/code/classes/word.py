@@ -2,8 +2,8 @@ from classes.position import Position
 import json
 
 class Word:
-    def __init__(self):
-        self.__positions = []
+    def __init__(self, positions=None): 
+        self.__positions = positions if positions else []
         self.__direction = ''
 
     @property
@@ -25,6 +25,21 @@ class Word:
     def add_position(self, position: Position, index: int = None) -> None:
         if not index: self.__positions.append(position)
         else: self.__positions.insert(index, position)
+
+    @staticmethod
+    def concatenate(*words: 'list[Word]') -> 'Word':
+        print('Running Word.concatenate()')
+        concatenated_positions = []
+        direction = ''
+        for word in words:
+            if word != None and word.positions != []:
+                concatenated_positions.extend(word.positions)
+                direction = word.direction
+
+        new_word = Word(concatenated_positions)
+        new_word.direction = direction
+        return new_word
+
     
     def get_min_max_positions(self) -> 'tuple(Position, Position)':
         """

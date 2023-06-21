@@ -299,8 +299,7 @@ class PlayerInterface(DogPlayerInterface):
 		card.image = image
 		card.bind(
 		'<Button-1>',
-		lambda event: self.select_card_from_pack(
-			event)
+		lambda event: self.select_card_from_pack(event)
 		)
 		card.pack()
 		return card
@@ -554,5 +553,5 @@ class PlayerInterface(DogPlayerInterface):
 
 	def select_card_from_pack(self, event) -> None:
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"
-		print(pack_index)
+		print(f'AQUI ESTAMOS => {pack_index}')
 		self.round_manager.select_card_from_pack(int(pack_index))
