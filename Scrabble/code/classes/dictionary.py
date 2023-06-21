@@ -1,4 +1,5 @@
 from classes.trie import Trie
+import json
 
 class Dictionary:
     def __init__(self):
@@ -6,6 +7,10 @@ class Dictionary:
         self.__trie = Trie()
         self.__trie.load_file('src/dictionary/br-sem-acentos.txt')
         print('ÁRVORE CARREGADA')
+
+    @property
+    def valid_words(self):
+        return self.__valid_words
     
     def is_valid(self, word: str) -> bool:
         # Verifies if the word is already valid
@@ -18,3 +23,9 @@ class Dictionary:
     def set_new_valid_word(self, word: str):
         # Set new word already in board
         self.__valid_words.append(word)
+    
+    def convert_to_json(self):
+        move_dict = {'valid_words': self.valid_words}
+        json_string =  json.dumps(move_dict)
+        _json = json.loads(json_string)
+        return _json

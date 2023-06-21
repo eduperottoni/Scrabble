@@ -5,6 +5,15 @@ from classes.card import Card
 from constants import messages
 from constants.positions import TW, DW, DL, TL
 from classes.position import TWPosition, DLPosition, DWPosition, TLPosition
+from classes.exceptions import NotYourTurnException
+
+
+
+# TODO QUANDO NÃO DER PALAVRA VÁLIDA, RETORNAR OS CARDS
+# TODO QUANDO DESISTIR DO TURNO, RETORNAR CARDS
+# TODO QUANDO INVOCAR CHANGE_MOVE, RETORNAR CARDS
+
+
 
 class RoundManager:
     def __init__(self):
@@ -158,6 +167,7 @@ class RoundManager:
             move['local_player'] = self.__local_player.convert_to_json()
         elif self.move_type == Move.CONSTRUCTION:
             move['valid_word'] = self.board.current_word.convert_to_json()
+            move['dict_valid_words'] = self.board.dictionary.convert_to_json()
         elif self.move_type == Move.CHANGE:
             # move['pack'] = self.local_player.pack.convert_to_json()
             move['bag'] = self.board.bag.convert_to_json()
@@ -255,22 +265,15 @@ class RoundManager:
             self.remote_player.toogle_turn()
         elif move_type == Move.CONSTRUCTION:
             print("MOVE - CONSTRUCTION")
-            self.local_player.toogle_turn()
-            self.remote_player.toogle_turn()
             string = move_dict['valid_word']['string']
             positions = move_dict['valid_word']['positions']
+            self.board.update(string, positions)
             for index, coord in enumerate(positions):
-                letter = string[index]
-                print(index)
-                print(coord)
-                card = Card(letter)
                 self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
-
-                position = self.board.positions[coord[0]][coord[1]]
-                position.card = card
-                position.disable()
-
+            self.local_player.toogle_turn()
+            self.remote_player.toogle_turn()
             print(move_dict)
+            self.reset_move()
     
     def submit_word(self):
         print("COMEÇANDO O SUBMIT WORD")
@@ -320,10 +323,9 @@ class RoundManager:
                 dict_json = self.convert_move_to_dict()
                 self.__player_interface.dog_server_interface.send_move(dict_json)
 
-                self.board.reset_curr_adj_words_dict()
-                self.board.current_word.reset()
-
+                self.reset_move()
             except Exception as e:
+                # TODO CHAMAR AQUI O RETURN_CARDS_TO_PACK
                 self.__player_interface.show_message(title='Palavra inválida', message=str(e))
 
         else:
@@ -455,28 +457,32 @@ class RoundManager:
 
 
     def give_up_round(self):
-        self.__move_type = Move.GIVE_UP
-        self.reset_move()
-        self.local_player.dropouts += 1
-        end = self.verify_game_end()
-        if end:
-            print("Enviar jogada give_up1")
-            print("Restart game")
+        if self.local_player.is_turn:
+            self.__move_type = Move.GIVE_UP
+            self.reset_move()
+            self.local_player.dropouts += 1
+            end = self.verify_game_end()
+            if end:
+                print("Enviar jogada give_up1")
+                print("Restart game")
+            else:
+                print("Enviar jogada give_up2")
+                self.__match_state = State.WAITING_REMOTE_MOVE
+            # desseleciona todos os cads do pack antes de enviar 
+            any_selected = self.local_player.pack.any_cards_selected()
+            if any_selected:
+                selected_index = self.local_player.pack.get_selected_card_index()
+                self.local_player.pack.deselect_all_cards()
+                self.player_interface.mark_off_card(selected_index)
+
+            self.local_player.toogle_turn()
+            self.remote_player.toogle_turn()
+            dict_json = self.convert_move_to_dict()
+            self.__player_interface.dog_server_interface.send_move(dict_json)
         else:
-            print("Enviar jogada give_up2")
-            self.__match_state = State.WAITING_REMOTE_MOVE
+            raise NotYourTurnException
 
-        # desseleciona todos os cads do pack antes de enviar 
-        any_selected = self.local_player.pack.any_cards_selected()
-        if any_selected:
-            selected_index = self.local_player.pack.get_selected_card_index()
-            self.local_player.pack.deselect_all_cards()
-            self.player_interface.mark_off_card(selected_index)
-
-        self.local_player.toogle_turn()
-        self.remote_player.toogle_turn()
-        dict_json = self.convert_move_to_dict()
-        self.__player_interface.dog_server_interface.send_move(dict_json)
+        
         
 
     def verify_game_end(self):

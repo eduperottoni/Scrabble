@@ -1,6 +1,8 @@
 import copy
+import json
 from classes.bag import Bag
 from classes.word import Word
+from classes.card import Card
 from classes.dictionary import Dictionary
 from constants.cards import CARDS_QUANTITY_BY_LETTER
 from constants.measures import BOARD_SIDE
@@ -58,6 +60,10 @@ class Board:
     @property
     def positions(self):
         return self.__positions
+
+    @property
+    def dictionary(self):
+        return self.__dictionary
     
     @property
     def bag(self):
@@ -293,6 +299,8 @@ class Board:
         # current_adjacent_words = self.__current_adjacent_words_dict
         current_word = copy.deepcopy(self.__current_adjacent_words_dict['current'])
         direction = current_word.direction
+        current_direction_key = ''
+        adjacent_direction_key = ''
         for position in current_word.positions:
             coordinate = position.coordinate
             if direction == 'horizontal':
@@ -324,6 +332,9 @@ class Board:
         # print(self.current_adjacent_words_dict)
         # print(self.valid_words_search_dict)
         print("TERMINOU UPDATE SEARCH DICT")
+        print(self.valid_words_search_dict)
+        print(self.bag)
+        print(self.dictionary.valid_words)
 
     def verify_words_existance_and_validity(self):
         print("verify_words_existance_and_validity")
@@ -332,18 +343,24 @@ class Board:
         print([position.card.letter for position in self.__current_adjacent_words_dict["current"].positions])
         current_string = (self.__current_adjacent_words_dict['current'].get_string()).lower()
         print(f"--AVALIANDO A PALAVRA: {current_string}")
-        if not self.__dictionary.search_word(current_string):
+        already_valid_words = self.__dictionary.valid_words
+        if not self.__dictionary.search_word(current_string) and current_string not in already_valid_words:
             print(f"PALAVRA {current_string} NÃO EXISTE!")
             raise WordDoesNotExistException
 
         for word in self.__current_adjacent_words_dict['adjacents']:
-            adjacent_string = (word.get_string()).lower()
+            adjacent_string = word.get_string().lower()
             print(f"--AVALIANDO A PALAVRA: {adjacent_string}")
-            if not self.__dictionary.search_word(adjacent_string):
+            if not self.__dictionary.search_word(adjacent_string) and current_string not in already_valid_words:
                 print(f"PALAVRA {adjacent_string} NÃO EXISTE!")
                 raise WordDoesNotExistException
 
         print("PALAVRAS VÁLIDADAS NO DICIONÁRIO!")
+        self.__dictionary.set_new_valid_word(current_string)
+        for word in self.__current_adjacent_words_dict['adjacents']:
+            adjacent_string = word.get_string().lower()
+            self.__dictionary.set_new_valid_word(adjacent_string)
+
         return True
     
     def verify_current_word_same_line_or_column(self):
@@ -438,3 +455,18 @@ class Board:
     
     def reset_curr_adj_words_dict(self):
         self.__current_adjacent_words_dict = {'current': None, 'adjacents': []}
+
+    def update(self, string, positions):
+        for index, coord in enumerate(positions):
+                letter = string[index]
+                card = Card(letter)
+                position = self.positions[coord[0]][coord[1]]
+                position.card = card
+                position.disable()
+                self.current_word.add_position(position)
+        # valida as regras gerais da palavra
+        self.determine_adjacent_words()
+        self.update_search_dict()
+        if not self.first_word_created: self.first_word_created = True
+
+        

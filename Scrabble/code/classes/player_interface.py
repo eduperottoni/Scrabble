@@ -275,7 +275,10 @@ class PlayerInterface(DogPlayerInterface):
 		self.round_manager.change_cards_from_pack()
 
 	def give_up_round(self, event):
-		self.round_manager.give_up_round()
+		try:
+			self.round_manager.give_up_round()
+		except Exception as e:
+			self.show_message(f'Erro ao desistir da partida -> {e}')
 
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
