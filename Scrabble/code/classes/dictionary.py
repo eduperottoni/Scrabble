@@ -11,6 +11,10 @@ class Dictionary:
     @property
     def valid_words(self):
         return self.__valid_words
+
+    @valid_words.setter
+    def valid_words(self, words_list: 'list[str]'):
+        self.__valid_words = words_list
     
     def is_valid(self, word: str) -> bool:
         # Verifies if the word is already valid

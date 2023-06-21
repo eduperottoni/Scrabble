@@ -165,9 +165,13 @@ class RoundManager:
         if self.move_type == Move.INITIAL:
             move['remote_player'] = self.__remote_player.convert_to_json()
             move['local_player'] = self.__local_player.convert_to_json()
+            move['bag'] = self.board.bag.convert_to_json()
         elif self.move_type == Move.CONSTRUCTION:
             move['valid_word'] = self.board.current_word.convert_to_json()
             move['dict_valid_words'] = self.board.dictionary.convert_to_json()
+            move['bag'] = self.board.bag.convert_to_json()
+            print('O QUE FOI ENVIADO COMO BAG')
+            print(move['bag']['cards_amount_per_letter'])
         elif self.move_type == Move.CHANGE:
             # move['pack'] = self.local_player.pack.convert_to_json()
             move['bag'] = self.board.bag.convert_to_json()
@@ -267,7 +271,10 @@ class RoundManager:
             print("MOVE - CONSTRUCTION")
             string = move_dict['valid_word']['string']
             positions = move_dict['valid_word']['positions']
-            self.board.update(string, positions)
+            direction = move_dict['valid_word']['direction']
+            bag_cards = move_dict['bag']['cards_amount_per_letter']
+            dict_valid_words = move_dict['dict_valid_words']
+            self.board.update(string, positions, direction, dict_valid_words, bag_cards)
             for index, coord in enumerate(positions):
                 self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
             self.local_player.toogle_turn()
@@ -289,6 +296,10 @@ class RoundManager:
                 
                 if not self.board.first_word_created:
                     self.board.first_word_created = True
+
+                total = self.board.calculate_player_score()
+                self.local_player.score = total
+                print(f'SCORE DO PLAYER -> {total}')
                 
                 self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
 
@@ -309,6 +320,7 @@ class RoundManager:
                         self.local_player.pack.cards[index_empty] = cards[index]
                         aux_dict[index_empty] = self.local_player.pack.cards[index_empty].letter
                 self.player_interface.update_gui_local_pack(aux_dict)
+                self.player_interface.update_gui_players_score()
                 aux_dict = {}
                 print("----------------------------------------------------------")
 
@@ -331,9 +343,6 @@ class RoundManager:
         else:
             print("NOT CONSTRUCTION MOVE")
             self.__player_interface.show_message(title='Jogada inválida', message="Jogada inválida, é preciso formar uma palavra para submetê-la!")
-
-    def verify_game_end(self):
-        return self.local_player.dropouts == 2 and self.remote_player == 2 or self.board.bag.get_cards_amount() == 0
     
     def reset_move(self):
         """
@@ -459,6 +468,7 @@ class RoundManager:
     def give_up_round(self):
         if self.local_player.is_turn:
             self.__move_type = Move.GIVE_UP
+            self.return_cards_to_pack()
             self.reset_move()
             self.local_player.dropouts += 1
             end = self.verify_game_end()
