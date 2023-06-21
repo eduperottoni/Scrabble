@@ -46,7 +46,6 @@ class Bag:
         :return: list of Cards objects
         """
         print(f'Running get_random_cards to catch: {num} cards with the following exceptions: {exceptions}')
-        print(f'Número de cards pedidos')
         if self.get_cards_amount() >= num:
             # Calculating if there's card enough without exceptions
             dict_copy = self.__cards_amount_per_letter.copy()
@@ -103,6 +102,9 @@ class Bag:
         # 1 - Card's quantity validation
         for letter in letters:
             if self.__cards_amount_per_letter[letter] == 0:
+                print('ERRRO AQUIIIIII')
+                print(letter)
+                print(self.__cards_amount_per_letter[letter])
                 raise NotEnoughCardsOnBagException
         # 2 - Getting cards
         cards = []
@@ -134,8 +136,11 @@ class Bag:
     def __str__(self):
         return str(self.__cards_amount_per_letter)
     
+    # def update(self, bag_cards: 'dict[str, int]') -> None:
+    #     for letter, amount in bag_cards.items():
+    #         self.cards_amount_per_letter[letter] = int(amount)
 
-    def convert_to_json(self):
+    def convert_to_json(self) -> dict:
         a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
         # print(a)
         json_string = a.replace("'", "\"").replace('_Bag__', '')

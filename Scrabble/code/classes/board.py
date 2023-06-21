@@ -148,8 +148,6 @@ class Board:
         self.verify_connected_positions()
         self.determine_adjacent_words()
         # self.verify_words_existance_and_validity()
-        # total = self.calculate_player_score()
-        # print(total)
         self.update_search_dict()
         return True
 
@@ -491,14 +489,24 @@ class Board:
     def reset_curr_adj_words_dict(self):
         self.__current_adjacent_words_dict = {'current': None, 'adjacents': []}
 
-    def update(self, string, positions):
+    def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag_cards: 'dict[str, int]') -> None:
         for index, coord in enumerate(positions):
-                letter = string[index]
-                card = Card(letter)
-                position = self.positions[coord[0]][coord[1]]
-                position.card = card
-                position.disable()
-                self.current_word.add_position(position)
+            letter = string[index]
+            print(f'LETTER A SER PEGA NA BAG -> {letter}')
+            card_obj = Card(letter)
+            print(f'CARD GERADO -> {card_obj}')
+            print(f'letra do CARD GERADO -> {card_obj.letter}')
+            position = self.positions[coord[0]][coord[1]]
+            position.card = card_obj
+            position.disable()
+            self.current_word.add_position(position)
+        self.current_word.direction = direction
+        print('BAG ANTES DO UPDATE DE QUEM RECEBE')
+        print(self.bag.cards_amount_per_letter) 
+        self.bag.cards_amount_per_letter = bag_cards
+        print('BAG DEPOIS DO UPDATE DE QUEM RECEBE')
+        print(self.bag.cards_amount_per_letter)
+        self.dictionary.valid_words = dict_valid_words
         # valida as regras gerais da palavra
         self.determine_adjacent_words()
         self.update_search_dict()

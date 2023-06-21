@@ -278,7 +278,7 @@ class PlayerInterface(DogPlayerInterface):
 		try:
 			self.round_manager.give_up_round()
 		except Exception as e:
-			self.show_message(f'Erro ao desistir da partida -> {e}')
+			self.show_message("ERRO", f'Erro ao desistir da partida -> {e}')
 
 	def __askquestion(self, title: str, ask_message: str) -> None:
 		answer = messagebox.askquestion(title, ask_message, icon='question')
@@ -378,7 +378,7 @@ class PlayerInterface(DogPlayerInterface):
 		else:
 			print("not initial or change move or give_up or construction")
 	
-	def __update_gui(self, move_type: Move = None) -> None:
+	def update_gui(self, move_type: Move = None) -> None:
 		#TODO if move_type == None: get RoundManager.move_type 
 		if move_type == Move.INITIAL:
 			# Atualizar nomes dos jogadores
@@ -388,7 +388,7 @@ class PlayerInterface(DogPlayerInterface):
 			self.__update_gui_players_names()
 			self.__update_gui_players_score()
 
-	def __update_gui_players_score(self):
+	def update_gui_players_score(self):
 		local_score = self.round_manager.local_player.score
 		remote_score = self.round_manager.remote_player.score
 		self.scores['remote'].configure(text=f'{str(remote_score)}')
@@ -560,3 +560,8 @@ class PlayerInterface(DogPlayerInterface):
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"
 		print(f'AQUI ESTAMOS => {pack_index}')
 		self.round_manager.select_card_from_pack(int(pack_index))
+
+	# def receive_withdrawal_notification(self):
+	# 	self.board.receive_withdrawal_notification()
+	# 	game_state = self.board.get_status()
+	# 	self.update_gui(game_state)
