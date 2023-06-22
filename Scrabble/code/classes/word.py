@@ -69,7 +69,6 @@ class Word:
         positions = [position for position in self.__positions]
         self.__positions = []
         self.__direction = ''
-        return positions
 
 
     def convert_to_json(self):

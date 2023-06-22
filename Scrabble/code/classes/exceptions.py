@@ -8,6 +8,7 @@ from constants.messages import FIRST_WORD_RULES_NOT_RESPECTED_EXCEPTION
 from constants.messages import WORD_NOT_CONNECTED_EXCEPTION
 from constants.messages import WORD_DOES_NOT_EXIST_EXCEPTION
 from constants.messages import INVALID_OPERATION
+from constants.messages import LESSTHANTWOLETTERS
 # from constants.messages import 
 
 class NotEnoughCardsOnBagException(Exception):
@@ -55,4 +56,7 @@ class InvalidOperation(Exception):
         self.message = INVALID_OPERATION
         super().__init__(self.message)
 
-         
+class LessThanTwoLetters(Exception):
+    def __init__(self):
+        self.message = LESSTHANTWOLETTERS
+        super().__init__(self.message)      

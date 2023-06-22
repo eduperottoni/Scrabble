@@ -139,6 +139,7 @@ class RoundManager:
 
                         # adicionando a posição na currrent word
                         self.board.current_word.add_position(position)
+                        self.board.current_positions.append(position)
                         palavra = self.board.current_word.get_string()
                     else:
                         raise PositionAlreadyHasCardException
@@ -340,6 +341,7 @@ class RoundManager:
             self.local_player.dropouts = 0
             self.remote_player.dropouts = 0
         self.board.current_word.reset()
+        self.board.current_positions = []
         # self.local_player.pack.deselect_all_cards()
         self.board.reset_curr_adj_words_dict()
     
@@ -354,18 +356,30 @@ class RoundManager:
 
     def proceed_cards_returning(self):
         if self.move_type != Move.CHANGE:
-            positions = self.board.current_word.positions
+            positions = self.board.current_positions
 
             coordinates = []
             for position in positions:
                 coordinates.append(position.coordinate)
 
-            positions = self.board.current_word.reset()
+            self.board.current_word.reset()
+            self.board.current_positions = []
+
             board_coordinates = [position.coordinate for position in positions]
             empty_pack_indexes = self.local_player.pack.get_empty_indexes()
+            print(board_coordinates)
+
+            #
             cards = [position.card for position in positions]
+            for i in cards: print(i.letter)
+
+            #
             [position.reset() for position in positions]
+
             self.local_player.pack.insert_cards(cards, empty_pack_indexes)
+
+            for card in cards:
+                card.self_unselect()
 
             #: verificação das posições do board (se for uma posição especial é preciso reiniciar como especial)
             aux_dict = {}
@@ -404,14 +418,15 @@ class RoundManager:
 
                 self.local_player.toogle_turn()
                 self.remote_player.toogle_turn()
+
                 self.__player_interface.dog_server_interface.send_move(dict_json)
                 self.move_type = Move.CONSTRUCTION
                 self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
             else:
+                self.proceed_cards_returning()
                 self.move_type = Move.CHANGE
                 self.player_interface.show_message(title='Troca de letras', message="Selecione as letras que deseja trocar")
                 self.player_interface.mark_change_button()
-                # self.proceed_card_selection() #: totalmente inutil
         else:
             raise NotYourTurnException
 

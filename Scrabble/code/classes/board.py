@@ -8,13 +8,14 @@ from constants.cards import CARDS_QUANTITY_BY_LETTER
 from constants.measures import BOARD_SIDE
 from constants.positions import TW, DW, DL, TL
 from classes.position import NormalPosition, DWPosition, DLPosition, TWPosition, TLPosition
-from classes.exceptions import FirstWordRulesNotRespectedException , WordNotConnectedException, WordDoesNotExistException
+from classes.exceptions import FirstWordRulesNotRespectedException , WordNotConnectedException, WordDoesNotExistException, LessThanTwoLetters
 
 class Board:
     def __init__(self):
         self.__bag = Bag(CARDS_QUANTITY_BY_LETTER)
         self.__dictionary = Dictionary()
         self.__current_word = Word()
+        self.__current_positions = []
         
         """
         This is a dictionary with current and adjacent words,
@@ -72,6 +73,10 @@ class Board:
         return self.__current_word
     
     @property
+    def current_positions(self):
+        return self.__current_positions
+
+    @property
     def valid_words_search_dict(self):
         return self.__valid_words_search_dict
     
@@ -90,10 +95,17 @@ class Board:
     @first_word_created.setter
     def first_word_created(self, created: bool):
         self.__first_word_created = created
+    
+    @current_positions.setter
+    def current_positions(self, positions: list):
+        self.__current_positions = positions
 
     def calculate_player_score(self):
         total_score = 0
-        word = self.__current_word
+        word = self.__current_adjacent_words_dict['current']
+
+        print(self.__current_word.get_string())
+        print(self.current_word.get_string())
 
         word_multiply_const = 1
         for position in word.positions:
@@ -127,12 +139,19 @@ class Board:
 
 
     def verify_valid_word(self) -> bool:
+        self.verify_number_of_letters()
         self.verify_connected_positions()
         self.determine_adjacent_words()
         self.verify_words_existance_and_validity()
         self.update_search_dict()
 
         return True
+
+
+    def verify_number_of_letters(self):
+        if len(self.current_positions) >= 2: return True
+        else: raise LessThanTwoLetters
+
 
     def verify_connected_positions(self):
         aux = self.verify_current_word_same_line_or_column()
@@ -180,19 +199,20 @@ class Board:
                     # Coordenada acima
                     coord_above = (position.coordinate[0] - 1, position.coordinate[1])
 
-                    already_valid_word_below = copy.deepcopy(self.__valid_words_search_dict[coord_below]['vertical']) if self.__valid_words_search_dict[coord_below]['vertical'] != None else None
-                    already_valid_word_above = copy.deepcopy(self.__valid_words_search_dict[coord_above]['vertical']) if self.__valid_words_search_dict[coord_above]['vertical'] != None else None
+                    if coord_above[0] >= 0 and coord_below[0] <= 14:
+                        already_valid_word_below = copy.deepcopy(self.__valid_words_search_dict[coord_below]['vertical']) if self.__valid_words_search_dict[coord_below]['vertical'] != None else None
+                        already_valid_word_above = copy.deepcopy(self.__valid_words_search_dict[coord_above]['vertical']) if self.__valid_words_search_dict[coord_above]['vertical'] != None else None
 
-                    if already_valid_word_below and already_valid_word_above:
-                        already_valid_word_above.add_position(position)
-                        [already_valid_word_above.add_position(position) for position in already_valid_word_below.positions]
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
-                    elif already_valid_word_above:
-                        already_valid_word_above.add_position(position)
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
-                    elif already_valid_word_below:
-                        already_valid_word_above.add_position(position)
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
+                        if already_valid_word_below and already_valid_word_above:
+                            already_valid_word_above.add_position(position)
+                            [already_valid_word_above.add_position(position) for position in already_valid_word_below.positions]
+                            self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
+                        elif already_valid_word_above:
+                            already_valid_word_above.add_position(position)
+                            self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
+                        elif already_valid_word_below:
+                            already_valid_word_above.add_position(position)
+                            self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
                 
                 elif current_word.direction == 'vertical':
                     # Coordenada esquerda
@@ -200,19 +220,20 @@ class Board:
                     # Coordenada direita
                     coord_right = (position.coordinate[0], position.coordinate[1] + 1)
 
-                    already_valid_word_left = copy.deepcopy(self.__valid_words_search_dict[coord_left]['horizontal']) if self.__valid_words_search_dict[coord_left]['horizontal'] != None else None
-                    already_valid_word_right = copy.deepcopy(self.__valid_words_search_dict[coord_right]['horizontal']) if self.__valid_words_search_dict[coord_right]['horizontal'] != None else None
+                    if coord_left[1] >= 0 and coord_right[1] <= 14:
+                        already_valid_word_left = copy.deepcopy(self.__valid_words_search_dict[coord_left]['horizontal']) if self.__valid_words_search_dict[coord_left]['horizontal'] != None else None
+                        already_valid_word_right = copy.deepcopy(self.__valid_words_search_dict[coord_right]['horizontal']) if self.__valid_words_search_dict[coord_right]['horizontal'] != None else None
 
-                    if already_valid_word_left and already_valid_word_right:
-                        already_valid_word_left.add_position(position)
-                        [already_valid_word_left.add_position(position) for position in already_valid_word_right.positions]
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
-                    elif already_valid_word_left:
-                        already_valid_word_left.add_position(position)
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
-                    elif already_valid_word_right:
-                        already_valid_word_right.add_position(position, 0)
-                        self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right)
+                        if already_valid_word_left and already_valid_word_right:
+                            already_valid_word_left.add_position(position)
+                            [already_valid_word_left.add_position(position) for position in already_valid_word_right.positions]
+                            self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
+                        elif already_valid_word_left:
+                            already_valid_word_left.add_position(position)
+                            self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
+                        elif already_valid_word_right:
+                            already_valid_word_right.add_position(position, 0)
+                            self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right)
 
         #TODO PEGAR A PALAVRA DE MESMA DIREÇÃO ANTERIOR E POSTERIOR  
         max_min_positions = current_word.get_min_max_positions()
@@ -228,10 +249,16 @@ class Board:
             inf_coord = (min_pos.coordinate[0] - 1, min_pos.coordinate[1])
             sup_coord = (max_pos.coordinate[0] + 1, max_pos.coordinate[1])
 
-        inf_word = self.__valid_words_search_dict[inf_coord][direction]
-        sup_word = self.__valid_words_search_dict[sup_coord][direction]
+        in_board = True
+        for coord in [inf_coord, sup_coord]: 
+            for axis in coord: 
+                if axis in [-1, 15]: in_board = False
+
+        inf_word = self.__valid_words_search_dict[inf_coord][direction] if in_board else None
+        sup_word = self.__valid_words_search_dict[sup_coord][direction] if in_board else None
 
         new_current = Word.concatenate(inf_word, current_word, sup_word)
+
         self.__current_adjacent_words_dict['current'] = new_current
 
 
@@ -354,6 +381,7 @@ class Board:
             if position.is_enabled:
                 return False
             elif position not in self.__current_word.positions:
+                #FIXME: aqui a inserção deveria ser em self.__current_adjacent_words_dict['current'] e não na current
                 self.__current_word.add_position(position, index)
 
         return True
