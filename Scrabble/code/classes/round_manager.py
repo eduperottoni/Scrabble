@@ -492,7 +492,7 @@ class RoundManager:
         self.__match_state = State.FINISHED
 
     def restart_game(self):
-        self.match_state == State.NOT_INITIALIZED
+        self.match_state = State.NOT_INITIALIZED
         self.remote_player.reset()
         self.local_player.reset()
         self.board.reset()

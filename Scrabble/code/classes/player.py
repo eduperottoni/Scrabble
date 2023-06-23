@@ -62,7 +62,7 @@ class Player:
         self.__is_turn = False
         self.__score = 0
         self.__dropouts = 0
-        self.__pack = Pack()
+        self.__pack.reset()
 
 
     def initialize(self, id: str, name: str) -> None:

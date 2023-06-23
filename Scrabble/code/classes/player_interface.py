@@ -68,16 +68,14 @@ class PlayerInterface(DogPlayerInterface):
 		self.board_frame = Frame(self.main_frame, width=self.board_size, height=self.board_size, bg=interface.BG_MAIN_COLOR)
 		self.remote_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg=interface.BG_PLAYERS_SPACE)
 		self.remote_player_frame.pack(side='top')
-		self.scores['remote'] = self.__draw_score(self.remote_player_frame, (200,100), (720, 30))
 		self.local_player_frame = Frame(self.main_frame, width=window_size[0], height=self.player_frame_height, bg=interface.BG_PLAYERS_SPACE)
 		self.local_player_frame.pack(side='bottom')
-		self.scores['local'] = self.__draw_score(self.local_player_frame, (200,100), (720, 30))
 		for frame in [self.board_frame, self.main_frame]:
 			frame.pack()
 			frame.pack_propagate(0)
 		self.__load_images()
 		self.__render_gui()
-
+		self.window.mainloop()
 	@property
 	def dog_server_interface(self):
 		return self.__dog_server_interface
@@ -86,9 +84,11 @@ class PlayerInterface(DogPlayerInterface):
 	def __render_gui(self):
 		self.__initialize_dog()
 		self.__draw_packs((self.board_size/self.board_side*7, 1/3*self.player_frame_height), self.board_size/self.board_side)
+		self.scores['local'] = self.__draw_score(self.local_player_frame, (200,100), (720, 30))
+		self.scores['remote'] = self.__draw_score(self.remote_player_frame, (200,100), (720, 30))
 		self.__draw_board(self.board_size/self.board_side, self.board_side)
 		self.__draw_buttons()
-		self.window.mainloop()
+		
 
 	def __initialize_dog(self):
 		player_name = simpledialog.askstring(title='Identificação de jogador', prompt='Digite o seu nome:')
@@ -271,17 +271,17 @@ class PlayerInterface(DogPlayerInterface):
 
 
 	def submit_word(self, event):
-		# try:
+		try:
 			self.round_manager.submit_word()
-		# except Exception as e:
-			# self.show_message("ERRO", f'Erro ao submeter palavra -> {e}')
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao submeter palavra -> {e}')
 
 
 	def return_cards_to_pack(self, event):
-		# try:
+		try:
 			self.round_manager.return_cards_to_pack()
-		# except Exception as e:
-			# self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
 
 
 	def change_cards_from_pack(self, event):
@@ -346,6 +346,7 @@ class PlayerInterface(DogPlayerInterface):
 	def start_game(self) -> None:
 		print('CHAMANDO start game')
 		# Se o estado do jogo estiver em NOT_INITIALIZED
+		print(self.round_manager.match_state)
 		if (self.round_manager.match_state == State.NOT_INITIALIZED):
 			print('ESTADO É RUIM')
 			answer = self.__askquestion(messages.START_MATCH_TITLE, messages.START_MACTH_QUESTION)
@@ -393,21 +394,15 @@ class PlayerInterface(DogPlayerInterface):
 		elif a_move['move_type'] == 'CONSTRUCTION':
 			self.round_manager.receive_move(Move.CONSTRUCTION, a_move)
 
-
 	def __update_gui(self, move_type: Move = None) -> None:
-		#TODO if move_type == None: get RoundManager.move_type 
-		if move_type == Move.INITIAL:
-			# Atualizar nomes dos jogadores
-			# Atualizar placar dos jogadores
-			# Atualizar pack local
-			self.update_gui_local_pack()
-			self.__update_gui_players_names()
-			self.update_gui_players_score()
-
-
+		self.update_gui_local_pack()
+		self.__update_gui_players_names()
+		self.update_gui_players_score()
+	
 	def update_gui_players_score(self):
 		local_score = self.round_manager.local_player.score
 		remote_score = self.round_manager.remote_player.score
+		print(local_score)
 		self.scores['remote'].configure(text=f'{str(remote_score)}')
 		self.scores['local'].configure(text=f'{str(local_score)}')
 
@@ -561,7 +556,6 @@ class PlayerInterface(DogPlayerInterface):
 		match_state = self.round_manager.match_state
 		if match_state in [State.ABANDONED, State.FINISHED]:
 			self.round_manager.reset_game()
-			#TODO pegar game config
 			#TODO chamar o update da GUI
 
 	#TODO implementar método change_cards
@@ -582,8 +576,10 @@ class PlayerInterface(DogPlayerInterface):
 	def restart_game(self) -> None:
 		print('CHAMANDO RESTART DA PLAYER INTERFACE')
 		self.round_manager.restart_game()
-		self.start_game()
-
+		self.__update_gui()
+		self.__draw_board()
+		# self.round_manager.start_game()
+	
 	# def receive_withdrawal_notification(self):
 	# 	self.board.receive_withdrawal_notification()
 	# 	game_state = self.board.get_status()
