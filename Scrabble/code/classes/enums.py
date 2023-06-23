@@ -13,3 +13,4 @@ class Move(Enum):
     CHANGE = 2
     GIVE_UP = 3
     INITIAL = 4
+    FINAL = 5

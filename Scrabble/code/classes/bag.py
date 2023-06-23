@@ -21,10 +21,19 @@ class Bag:
         apenas a quantdade de cada um atualizada na bag. Quando solicitados
         novos cards, eles são criados.
         '''
+        self.__enabled = True
+
+    @property
+    def enabled(self):
+        return self.__enabled
 
     @property
     def cards_amount_per_letter(self):
         return self.__cards_amount_per_letter
+    
+    @enabled.setter
+    def enabled(self, enabled):
+        self.__enabled = enabled
     
     @cards_amount_per_letter.setter
     def cards_amount_per_letter(self, cards_amount_per_letter):
@@ -79,7 +88,8 @@ class Bag:
             else:
                 raise NotEnoughCardsOnBagException
         else:
-            raise NotEnoughCardsOnBagException
+            self.__enabled = False
+            return False
             
     # def exhange_cards(cards_list: list):
     #     exceptions = []
@@ -140,5 +150,9 @@ class Bag:
         a =  json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
         json_string = a.replace("'", "\"").replace('_Bag__', '')
         _json = json.loads(json_string)
-
+        print(_json)
         return _json
+
+    def reset(self, cards_quantity_by_letter):
+        self.enabled = True
+        self.cards_amount_per_letter = cards_quantity_by_letter

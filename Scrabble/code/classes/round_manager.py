@@ -5,15 +5,7 @@ from classes.card import Card
 from constants import messages
 from constants.positions import TW, DW, DL, TL
 from classes.position import TWPosition, DLPosition, DWPosition, TLPosition
-from classes.exceptions import NotYourTurnException
-
-
-
-# TODO QUANDO NÃO DER PALAVRA VÁLIDA, RETORNAR OS CARDS
-# TODO QUANDO DESISTIR DO TURNO, RETORNAR CARDS
-# TODO QUANDO INVOCAR CHANGE_MOVE, RETORNAR CARDS
-
-
+from classes.exceptions import NotYourTurnException, MatchFinishedException, PositionAlreadyHasCardException, InvalidOperation, CardNotSelectedException
 
 class RoundManager:
     def __init__(self):
@@ -120,36 +112,36 @@ class RoundManager:
         :param coord: tuple indicating the position selectd
         :return int: 0 if the operation is invalid, 1 if the operation is valid 
         """
-        if self.local_player.is_turn:
-            if self.move_type == Move.CONSTRUCTION:
-                if self.local_player.pack.any_cards_selected:
-                    position = self.board.positions[coord[0]][coord[1]]
-                    card = self.local_player.pack.current_selected_cards[0]
+        if self.match_state != State.FINISHED:
+            if self.local_player.is_turn:
+                if self.move_type == Move.CONSTRUCTION:
+                    if self.local_player.pack.any_cards_selected:
+                        position = self.board.positions[coord[0]][coord[1]]
+                        card = self.local_player.pack.current_selected_cards[0]
 
-                    if position.is_enabled:
-                        self.player_interface.update_gui_board_positions({(coord[0], coord[1]): card.letter})
-                        
-                        # desabilita o card do board pra não poder mais adicionar lá
-                        position.card = card
-                        position.disable()
+                        if position.is_enabled:
+                            self.player_interface.update_gui_board_positions({(coord[0], coord[1]): card.letter})
+                            
+                            # desabilita o card do board pra não poder mais adicionar lá
+                            position.card = card
+                            position.disable()
 
-                        # limpa e desabilita o card do pack
-                        indexes = self.local_player.pack.remove_selected_cards()
-                        self.player_interface.update_gui_local_pack({indexes[0]: 'NORMAL'})
+                            # limpa e desabilita o card do pack
+                            indexes = self.local_player.pack.remove_selected_cards()
+                            self.player_interface.update_gui_local_pack({indexes[0]: 'NORMAL'})
 
-                        # adicionando a posição na currrent word
-                        self.board.current_word.add_position(position)
-                        self.board.current_positions.append(position)
-                        palavra = self.board.current_word.get_string()
+                            # adicionando a posição na currrent word
+                            self.board.current_word.add_position(position)
+                            palavra = self.board.current_word.get_string()
+                        else:
+                            raise PositionAlreadyHasCardException
                     else:
-                        raise PositionAlreadyHasCardException
+                        raise CardNotSelectedException
                 else:
-                    raise CardNotSelectedException
+                    raise InvalidOperation
             else:
-                raise InvalidOperation
-        else:
-            raise NotYourTurnException
-
+                raise NotYourTurnException
+        else: raise MatchFinishedException
 
     def convert_move_to_dict(self):
         move = {}
@@ -170,7 +162,6 @@ class RoundManager:
         elif self.move_type == Move.CHANGE:
             # move['pack'] = self.local_player.pack.convert_to_json()
             move['bag'] = self.board.bag.convert_to_json()
-
         return move
 
 
@@ -192,12 +183,13 @@ class RoundManager:
 
         :param index: index of the position of the pack selected in GUI
         """
-        if self.__local_player.is_turn:
-            if self.move_type != Move.CHANGE:
-                self.move_type = Move.CONSTRUCTION
-            self.proceed_card_selection(index)
-
-        else: raise NotYourTurnException
+        if self.match_state != State.FINISHED:
+            if self.__local_player.is_turn:
+                if self.move_type != Move.CHANGE:
+                    self.move_type = Move.CONSTRUCTION
+                self.proceed_card_selection(index)
+            else: raise NotYourTurnException
+        else: raise MatchFinishedException
 
     
     def proceed_card_selection(self, index: int):
@@ -241,7 +233,7 @@ class RoundManager:
 
             # Updates state and move type
             self.move_type == Move.INITIAL
-            self.state = State.IN_PROGRESS
+            self.__match_state = State.IN_PROGRESS
 
         elif move_type == Move.CHANGE:
             cards_bag = move_dict['bag']['cards_amount_per_letter']
@@ -258,17 +250,23 @@ class RoundManager:
             self.local_player.toogle_turn()
             self.remote_player.toogle_turn()
 
-            self.__player_interface.show_message(title='Jogada recebida', message="O outro jogador passou a vez. É sua vez de jogar!")
+            self.verify_game_end()
+
+            if self.__match_state != State.FINISHED:
+                self.__player_interface.show_message(title='Jogada recebida', message="O outro jogador passou a vez. É sua vez de jogar!")
+            else:
+                self.__player_interface.show_message(title='PARTIDA FINALIZADA', message="O JOGO ACABOU")
+            
 
         elif move_type == Move.CONSTRUCTION:
             string = move_dict['valid_word']['string']
             positions = move_dict['valid_word']['positions']
             direction = move_dict['valid_word']['direction']
-            bag_cards = move_dict['bag']['cards_amount_per_letter']
+            bag = move_dict['bag']
             dict_valid_words = move_dict['dict_valid_words']['valid_words']
             remote_player_score = move_dict['player_score']['score']
 
-            self.board.update(string, positions, direction, dict_valid_words, bag_cards)
+            self.board.update(string, positions, direction, dict_valid_words, bag)
 
             for index, coord in enumerate(positions):
                 self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
@@ -280,9 +278,13 @@ class RoundManager:
             self.player_interface.update_gui_players_score()
 
             self.reset_move()
+            self.verify_game_end()
 
-            self.__player_interface.show_message(title='Jogada recebida', message="Sua vez de jogar!")
-    
+            if self.__match_state != State.FINISHED:
+                self.__player_interface.show_message(title='Jogada recebida', message="Sua vez de jogar!")
+            else:
+                self.__player_interface.show_message(title='PARTIDA FINALIZADA', message="O JOGO ACABOU")
+
     def submit_word(self):
         if self.move_type == Move.CONSTRUCTION:
             try:
@@ -297,39 +299,37 @@ class RoundManager:
 
                 total = self.board.calculate_player_score()
                 self.local_player.score += total
+                self.player_interface.update_gui_players_score()
                 
                 self.__player_interface.show_message(title='Palavra válida', message="Palavra válida!")
 
                 # preenchendo o pack do jogador
                 indexes_empty_cards = self.local_player.pack.get_empty_indexes()
-                board_cards = [position.card.letter for position in self.board.current_adjacent_words_dict["current"].positions]
-                cards = self.__board.bag.get_random_cards(len(board_cards), board_cards)
+                board_cards = [position.card.letter for position in self.board.current_word.positions]
+                cards = self.__board.bag.get_random_cards(len(board_cards), [])
 
-                aux_dict = {}
-                for index, index_empty in enumerate(indexes_empty_cards):
-                        self.local_player.pack.cards[index_empty] = cards[index]
-                        aux_dict[index_empty] = self.local_player.pack.cards[index_empty].letter
-
-                self.player_interface.update_gui_local_pack(aux_dict)
-                self.player_interface.update_gui_players_score()
-                aux_dict = {}
+                if cards:
+                    self.local_player.pack.insert_cards(cards, indexes_empty_cards)
+                    aux_dict = {}
+                    for index_empty in indexes_empty_cards:
+                            aux_dict[index_empty] = self.local_player.pack.cards[index_empty].letter
+                    self.player_interface.update_gui_local_pack(aux_dict)
 
                 # verificar final do jogo
-                # is_game_end = self.verify_game_end()
+                self.verify_game_end()
 
                 self.local_player.toogle_turn()
                 self.remote_player.toogle_turn()
 
                 dict_json = self.convert_move_to_dict()
-                self.__player_interface.dog_server_interface.send_move(dict_json)
+                self.__player_interface.send_move(dict_json)
 
                 self.__player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
                 self.reset_move()
 
             except Exception as e:
-                # TODO CHAMAR AQUI O RETURN_CARDS_TO_PACK
                 self.__player_interface.show_message(title='Palavra inválida', message=str(e))
-
+                self.return_cards_to_pack()
         else:
             self.__player_interface.show_message(title='Jogada inválida', message="Jogada inválida, é preciso formar uma palavra para submetê-la!")
     
@@ -341,7 +341,6 @@ class RoundManager:
             self.local_player.dropouts = 0
             self.remote_player.dropouts = 0
         self.board.current_word.reset()
-        self.board.current_positions = []
         # self.local_player.pack.deselect_all_cards()
         self.board.reset_curr_adj_words_dict()
     
@@ -349,21 +348,23 @@ class RoundManager:
         """
         Return cards main methos (called in the execution of the use case)
         """
-        if self.local_player.is_turn:
-            self.proceed_cards_returning()
-        else:
-            raise NotYourTurnException
+        if self.match_state != State.FINISHED:
+            if self.local_player.is_turn:
+                    self.proceed_cards_returning()
+            else:
+                raise NotYourTurnException
+        else: raise MatchFinishedException
 
     def proceed_cards_returning(self):
         if self.move_type != Move.CHANGE:
-            positions = self.board.current_positions
+            print('ESTAMOS RETORNANDO A PALAVRA')
+            positions = self.board.current_word.positions
 
             coordinates = []
             for position in positions:
                 coordinates.append(position.coordinate)
 
             self.board.current_word.reset()
-            self.board.current_positions = []
 
             board_coordinates = [position.coordinate for position in positions]
             empty_pack_indexes = self.local_player.pack.get_empty_indexes()
@@ -391,7 +392,7 @@ class RoundManager:
                 elif isinstance(position, DLPosition): coord_type = 'DL'
                 elif isinstance(position, TLPosition): coord_type = 'TL'
                 elif coordinate == (7,7): coord_type = '*'
-                else: coord_type = 'NORMAL' 
+                else: coord_type = 'NORMAL'
                 aux_dict[coordinate] = coord_type
 
             self.player_interface.update_gui_board_positions(aux_dict)
@@ -408,27 +409,29 @@ class RoundManager:
         """
         Change cards main methos (called in the execution of the use case)
         """
-        if self.local_player.is_turn:
-            if self.move_type == Move.CHANGE:
-                self.proceed_change_cards()
-                self.reset_move()
-                self.player_interface.mark_off_change_button()
+        if self.match_state != State.FINISHED:
+            if self.local_player.is_turn:
+                if self.move_type == Move.CHANGE:
+                    self.proceed_change_cards()
+                    self.reset_move()
+                    self.player_interface.mark_off_change_button()
 
-                dict_json = self.convert_move_to_dict()
+                    dict_json = self.convert_move_to_dict()
 
-                self.local_player.toogle_turn()
-                self.remote_player.toogle_turn()
+                    self.local_player.toogle_turn()
+                    self.remote_player.toogle_turn()
 
-                self.__player_interface.dog_server_interface.send_move(dict_json)
-                self.move_type = Move.CONSTRUCTION
-                self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
+                    self.__player_interface.send_move(dict_json)
+                    self.move_type = Move.CONSTRUCTION
+                    self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
+                else:
+                    self.proceed_cards_returning()
+                    self.move_type = Move.CHANGE
+                    self.player_interface.show_message(title='Troca de letras', message="Selecione as letras que deseja trocar")
+                    self.player_interface.mark_change_button()
             else:
-                self.proceed_cards_returning()
-                self.move_type = Move.CHANGE
-                self.player_interface.show_message(title='Troca de letras', message="Selecione as letras que deseja trocar")
-                self.player_interface.mark_change_button()
-        else:
-            raise NotYourTurnException
+                raise NotYourTurnException
+        else: raise MatchFinishedException
 
     def proceed_change_cards(self):
         selected_cards = self.local_player.pack.current_selected_cards
@@ -449,53 +452,49 @@ class RoundManager:
 
 
     def give_up_round(self):
-        if self.local_player.is_turn:
-            self.__move_type = Move.GIVE_UP
-            self.return_cards_to_pack()
-            self.reset_move()
-            self.local_player.dropouts += 1
-            end = self.verify_game_end()
-            if end:
-                # TODO: restart game
-                print("Restart game")
-            else:
+        if self.match_state != State.FINISHED:
+            if self.local_player.is_turn:
+                self.__move_type = Move.GIVE_UP
+                self.return_cards_to_pack()
+                self.reset_move()
+                self.local_player.dropouts += 1
                 self.__match_state = State.WAITING_REMOTE_MOVE
+                self.verify_game_end()
 
-            #: desseleciona todos os cads do pack antes de enviar 
-            any_selected = self.local_player.pack.any_cards_selected()
-            if any_selected:
-                selected_index = self.local_player.pack.get_selected_card_index()
-                self.local_player.pack.deselect_all_cards()
-                self.player_interface.mark_off_card(selected_index)
+                #: desseleciona todos os cads do pack antes de enviar 
+                any_selected = self.local_player.pack.any_cards_selected()
+                if any_selected:
+                    selected_index = self.local_player.pack.get_selected_card_index()
+                    self.local_player.pack.deselect_all_cards()
+                    self.player_interface.mark_off_card(selected_index)
 
-            self.local_player.toogle_turn()
-            self.remote_player.toogle_turn()
-            dict_json = self.convert_move_to_dict()
-            self.__player_interface.dog_server_interface.send_move(dict_json)
-            
-            self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
+                self.local_player.toogle_turn()
+                self.remote_player.toogle_turn()
+                dict_json = self.convert_move_to_dict()
+                self.__player_interface.send_move(dict_json)
+                
+                self.player_interface.show_message(title='Jogada enviada', message="Você acabou de jogar, aguarde a jogada do outro jogador!")
 
-        else:
-            raise NotYourTurnException 
-        
-
+            else:
+                raise NotYourTurnException 
+        else: raise MatchFinishedException
     def verify_game_end(self):
-        # move_type = self.__move_type
-        # if move_type == Move.GIVE_UP:
-        #     if self.local_player.dropouts == 2 and self.remote_player.dropouts == 2:
-        #         pass
-        # else:
-        #     if self.board.bag.get_cards_amount() == 0 and self.local_player.pack.count_cards() == 0:
-        #         pass
+        if (self.local_player.dropouts == 2 and self.remote_player.dropouts == 2) or (self.board.bag.enabled == False):
+            self.proceed_game_end()
+        
+    def proceed_game_end(self):
+        if self.local_player.score >= self.remote_player.score:
+            self.player_interface.show_message(title='WINNER', message="Local Player Won!")
+            self.winner = self.local_player
+        elif self.local_player.score < self.remote_player.score:
+            self.player_interface.show_message(title='WINNER', message="Remote Player Won!")
+            self.winner = self.remote_player
+        self.__match_state = State.FINISHED
 
-        if (self.local_player.dropouts == 2 and self.remote_player.dropouts == 2) or (self.board.bag.get_cards_amount() == 0 and self.local_player.pack.count_cards() == 0):
-            if self.local_player.score >= self.remote_player.score:
-                self.player_interface.show_message(title='WINNER', message="Local Player Won!")
-                self.winner = self.local_player
-            elif self.local_player.score < self.remote_player.score:
-                self.player_interface.show_message(title='WINNER', message="Remote Player Won!")
-                self.winner = self.remote_player
-            self.__match_state = State.FINISHED
-            return True
-        else:
-            return False
+    def restart_game(self):
+        self.match_state == State.NOT_INITIALIZED
+        self.remote_player.reset()
+        self.local_player.reset()
+        self.board.reset()
+        self.winner = None
+        self.move_type = None

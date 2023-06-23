@@ -32,3 +32,6 @@ class Dictionary:
         json_string =  json.dumps(move_dict)
         _json = json.loads(json_string)
         return _json
+
+    def reset(self):
+        self.__valid_words = []

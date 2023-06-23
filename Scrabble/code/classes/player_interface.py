@@ -35,7 +35,7 @@ class PlayerInterface(DogPlayerInterface):
 		)
 		self.file_menu.add_command(
 			label='Restart game',
-			command= self.window.destroy,
+			command= self.restart_game,
 		)
 		self.menu_bar.add_cascade(
 			label="Game options",
@@ -271,17 +271,17 @@ class PlayerInterface(DogPlayerInterface):
 
 
 	def submit_word(self, event):
-		try:
+		# try:
 			self.round_manager.submit_word()
-		except Exception as e:
-			self.show_message("ERRO", f'Erro ao submeter palavra -> {e}')
+		# except Exception as e:
+			# self.show_message("ERRO", f'Erro ao submeter palavra -> {e}')
 
 
 	def return_cards_to_pack(self, event):
-		try:
+		# try:
 			self.round_manager.return_cards_to_pack()
-		except Exception as e:
-			self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
+		# except Exception as e:
+			# self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
 
 
 	def change_cards_from_pack(self, event):
@@ -342,12 +342,12 @@ class PlayerInterface(DogPlayerInterface):
 
 		new_score.place(x=position[0], y=position[1])
 		return label_score
-
-
-	# Starting game (com o DOG)
+	
 	def start_game(self) -> None:
+		print('CHAMANDO start game')
 		# Se o estado do jogo estiver em NOT_INITIALIZED
 		if (self.round_manager.match_state == State.NOT_INITIALIZED):
+			print('ESTADO É RUIM')
 			answer = self.__askquestion(messages.START_MATCH_TITLE, messages.START_MACTH_QUESTION)
 			if answer:
 				start_status = self.__dog_server_interface.start_match(2)
@@ -368,11 +368,13 @@ class PlayerInterface(DogPlayerInterface):
 
 					dict_json = self.round_manager.convert_move_to_dict()
 
-					self.dog_server_interface.send_move(dict_json)
+					self.send_move(dict_json)
 
 					self.update_gui_local_pack()
 					self.__update_gui_players_names()
 
+	def send_move(self, a_move:dict) -> None:
+		self.dog_server_interface.send_move(a_move)
 
 	def receive_move(self, a_move: dict) -> None:
 		if a_move['move_type'] == 'INITIAL':
@@ -521,16 +523,16 @@ class PlayerInterface(DogPlayerInterface):
 
 		:param event: event generxated by click in position
 		"""
-		try:
-			label_name = event.widget.winfo_name()
+		# try:
+		label_name = event.widget.winfo_name()
 
-			coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
-			coord_tuple = (int(coord_list[0]), int(coord_list[1]))
+		coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
+		coord_tuple = (int(coord_list[0]), int(coord_list[1]))
 
-			self.round_manager.select_board_position(coord_tuple)
+		self.round_manager.select_board_position(coord_tuple)
 
-		except Exception as e:
-			self.show_message("ERRO", f'Erro ao selecionar posição do tabuleiro -> {e}')
+		# except Exception as e:
+			# self.show_message("ERRO", f'Erro ao selecionar posição do tabuleiro -> {e}')
 
 
 	#Receiving game's start from DOG
@@ -577,6 +579,10 @@ class PlayerInterface(DogPlayerInterface):
 		except Exception as e:
 			self.show_message("ERRO", f'Erro ao selecionar letra -> {e}')
 
+	def restart_game(self) -> None:
+		print('CHAMANDO RESTART DA PLAYER INTERFACE')
+		self.round_manager.restart_game()
+		self.start_game()
 
 	# def receive_withdrawal_notification(self):
 	# 	self.board.receive_withdrawal_notification()

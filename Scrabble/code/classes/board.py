@@ -4,7 +4,7 @@ from classes.bag import Bag
 from classes.word import Word
 from classes.card import Card
 from classes.dictionary import Dictionary
-from constants.cards import CARDS_QUANTITY_BY_LETTER
+from constants.cards import CARDS_QUANTITY_BY_LETTER, CARDS_QUANTITY_BY_LETTER2
 from constants.measures import BOARD_SIDE
 from constants.positions import TW, DW, DL, TL
 from classes.position import NormalPosition, DWPosition, DLPosition, TWPosition, TLPosition
@@ -12,10 +12,9 @@ from classes.exceptions import FirstWordRulesNotRespectedException , WordNotConn
 
 class Board:
     def __init__(self):
-        self.__bag = Bag(CARDS_QUANTITY_BY_LETTER)
+        self.__bag = Bag(CARDS_QUANTITY_BY_LETTER2)
         self.__dictionary = Dictionary()
         self.__current_word = Word()
-        self.__current_positions = []
         
         """
         This is a dictionary with current and adjacent words,
@@ -39,12 +38,7 @@ class Board:
 
         self.__positions = []
         self.__first_word_created = False
-        # self.__premium_spots = [] # premium_spots = [('A', 'TLS'), ('B', 'DLS'), ('C', 'DLS'), ('D', 'DWS'), ('E', 'TLS')]
-        # # TODO colocar essas listas como constantes, visto que também são utilizadas para a interface
-        # tw = [(0,0), (0,7), (0,14), (7,0), (7,14), (14,0), (14,7), (14,14)]
-        # dw = [(1,1), (2,2), (3,3), (4,4), (13,13), (12,12), (11,11), (10,10), (1,13), (2,12), (3,11), (4,10), (13,1), (12,2), (11,3), (10,4)]
-        # dl = [(0,3), (0,11), (2,6), (2,8), (3,0), (3,7), (3,14), (6,2), (6,6), (6,8), (6,12), (7,3), (7,11), (8,2), (8,6), (8,8), (8,12), (11,0), (11,7), (11,14), (12,6), (12,8), (14,3), (14,11)]
-        # tl = [(1,5), (1,9), (5,1), (5,5), (5,9), (5,13), (9,1), (9,5), (9,9), (9,13), (13,5), (13,9)]
+
         for line in range(BOARD_SIDE):
             positions_line = []
             for column in range(BOARD_SIDE):
@@ -71,10 +65,6 @@ class Board:
     @property
     def current_word(self):
         return self.__current_word
-    
-    @property
-    def current_positions(self):
-        return self.__current_positions
 
     @property
     def valid_words_search_dict(self):
@@ -95,10 +85,6 @@ class Board:
     @first_word_created.setter
     def first_word_created(self, created: bool):
         self.__first_word_created = created
-    
-    @current_positions.setter
-    def current_positions(self, positions: list):
-        self.__current_positions = positions
 
     def calculate_player_score(self):
         total_score = 0
@@ -142,14 +128,14 @@ class Board:
         self.verify_number_of_letters()
         self.verify_connected_positions()
         self.determine_adjacent_words()
-        self.verify_words_existance_and_validity()
+        # self.verify_words_existance_and_validity()
         self.update_search_dict()
 
         return True
 
 
     def verify_number_of_letters(self):
-        if len(self.current_positions) >= 2: return True
+        if len(self.current_word.positions) >= 2: return True
         else: raise LessThanTwoLetters
 
 
@@ -374,15 +360,15 @@ class Board:
 
     def verify_positions_filling(self, min_position: tuple, max_position: tuple) -> bool:
         all_coords = self.generate_coords(min_coord=min_position, max_coord=max_position, direction=self.current_word.direction)
-
+        word = Word()
         for index, coord in enumerate(all_coords):
             position = self.get_position(board_coord=coord)
 
             if position.is_enabled:
                 return False
-            elif position not in self.__current_word.positions:
-                #FIXME: aqui a inserção deveria ser em self.__current_adjacent_words_dict['current'] e não na current
-                self.__current_word.add_position(position, index)
+            # elif position not in self.__current_word.positions:
+            self.__current_adjacent_words_dict['current'] = word.add_position(position)
+            # self.__current_word.add_position(position, index)
 
         return True
 
@@ -408,11 +394,16 @@ class Board:
 
         return coords
 
-
     def reset_curr_adj_words_dict(self):
         self.__current_adjacent_words_dict = {'current': None, 'adjacents': []}
 
-    def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag_cards: 'dict[str, int]') -> None:
+    def reset_valid_words_search_dict(self):
+        for i in range(15):
+            for j in range(15):
+                self.__valid_words_search_dict[(i, j)] = {'horizontal': None, 'vertical': None}
+
+
+    def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag: 'dict') -> None:
         for index, coord in enumerate(positions):
             letter = string[index]
             card_obj = Card(letter)
@@ -424,11 +415,23 @@ class Board:
             self.current_word.add_position(position)
 
         self.current_word.direction = direction
-        self.bag.cards_amount_per_letter = bag_cards
+        self.bag.cards_amount_per_letter = bag['cards_amount_per_letter']
+        self.bag.enabled = True if bag['enabled'] == 'True' else False
         self.dictionary.valid_words = dict_valid_words
         # valida as regras gerais da palavra
         self.determine_adjacent_words()
         self.update_search_dict()
         if not self.first_word_created: self.first_word_created = True
+
+    def reset(self):
+        self.reset_curr_adj_words_dict()
+        self.reset_valid_words_search_dict()
+        self.current_word.reset()
+        self.dictionary.reset()
+        self.bag.reset(CARDS_QUANTITY_BY_LETTER)
+        for list in self.positions:
+            for position in list:
+                position.reset()
+        self.first_word_created = False
 
         

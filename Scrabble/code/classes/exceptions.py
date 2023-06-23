@@ -9,6 +9,7 @@ from constants.messages import WORD_NOT_CONNECTED_EXCEPTION
 from constants.messages import WORD_DOES_NOT_EXIST_EXCEPTION
 from constants.messages import INVALID_OPERATION
 from constants.messages import LESSTHANTWOLETTERS
+from constants.messages import FINISHED_MATCH_EXCEPTION
 # from constants.messages import 
 
 class NotEnoughCardsOnBagException(Exception):
@@ -59,4 +60,9 @@ class InvalidOperation(Exception):
 class LessThanTwoLetters(Exception):
     def __init__(self):
         self.message = LESSTHANTWOLETTERS
+        super().__init__(self.message)      
+
+class MatchFinishedException(Exception):
+    def __init__(self):
+        self.message = FINISHED_MATCH_EXCEPTION
         super().__init__(self.message)      

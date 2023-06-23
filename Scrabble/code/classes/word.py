@@ -64,12 +64,9 @@ class Word:
             string += position.card.letter
         return string
 
-
     def reset(self):
-        positions = [position for position in self.__positions]
         self.__positions = []
         self.__direction = ''
-
 
     def convert_to_json(self):
         move_dict = {
