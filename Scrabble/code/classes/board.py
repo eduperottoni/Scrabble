@@ -390,7 +390,6 @@ class Board:
 
 
     def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag: 'dict') -> None:
-        
         for index, coord in enumerate(positions):
             letter = string[index]
             card_obj = Card(letter)

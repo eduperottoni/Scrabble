@@ -89,7 +89,10 @@ class Player:
         json_string = a.replace("'", "\"").replace('_Pack__', '').replace('_Card__', '').replace('_Player__', '')
         _json = json.loads(json_string)
         return _json
+    
 
+    def increment_droupouts(self):
+        self.__dropouts += 1
 
     def __str__(self):
         string = ""
