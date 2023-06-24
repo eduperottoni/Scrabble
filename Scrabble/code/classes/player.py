@@ -64,7 +64,6 @@ class Player:
         self.__dropouts = 0
         self.__pack.reset()
 
-
     def initialize(self, id: str, name: str) -> None:
         """
         Resets the player and initializes her id and name

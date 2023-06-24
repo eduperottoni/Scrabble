@@ -115,8 +115,7 @@ class Board:
         # verificar se há um card no centro do tabuleiro
         card_in_center = self.verify_card_in_center()
 
-        more_then_one_card = True if self.current_word.get_lenght() else False
-
+        more_then_one_card = self.current_word.get_lenght() >= 3
         if more_then_one_card and card_in_center: return True
         else: raise FirstWordRulesNotRespectedException
 

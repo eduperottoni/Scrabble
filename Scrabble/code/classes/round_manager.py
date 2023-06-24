@@ -330,7 +330,6 @@ class RoundManager:
             self.local_player.dropouts = 0
             self.remote_player.dropouts = 0
         self.board.current_word.reset()
-        # self.local_player.pack.deselect_all_cards()
         self.board.reset_curr_adj_words_dict()
     
     def return_cards_to_pack(self):
