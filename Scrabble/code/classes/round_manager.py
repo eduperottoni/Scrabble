@@ -244,10 +244,12 @@ class RoundManager:
             elif move_type == Move.CONSTRUCTION:
                 string = move_dict['valid_word']['string']
                 positions = move_dict['valid_word']['positions']
-                move_dict['dict_valid_words']['valid_words']
+                dict_valid_words = move_dict['dict_valid_words']['valid_words']
                 remote_player_score = move_dict['player_score']['score']
+                direction = move_dict['valid_word']['direction']
+                bag = move_dict['bag']
 
-                self.board.update(move_type)
+                self.board.update(string, positions, direction, dict_valid_words, bag)
 
                 for index, coord in enumerate(positions):
                     self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
