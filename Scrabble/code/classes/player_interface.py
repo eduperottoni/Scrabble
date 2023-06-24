@@ -367,15 +367,16 @@ class PlayerInterface(DogPlayerInterface):
 					#TODO Não podemos fazer isso, temos que conferir se a partida está em andamento (se foi iniciada) no clique
 					self.show_message(messages.START_MATCH_DOG_RESPONSE_TITLE, message)
 
-					dict_json = self.round_manager.convert_move_to_dict()
-
-					self.send_move(dict_json)
+					self.send_move()
 
 					self.update_gui_local_pack()
 					self.__update_gui_players_names()
 
-	def send_move(self, a_move:dict) -> None:
-		self.dog_server_interface.send_move(a_move)
+	def send_move(self) -> None:
+		dict_json = self.round_manager.convert_move_to_dict()
+		self.dog_server_interface.send_move(dict_json)
+		if not dict_json['move_type'] == 'INITIAL':
+			self.round_manager.match_state == State.WAITING_REMOTE_MOVE
 
 	def receive_move(self, a_move: dict) -> None:
 		if a_move['move_type'] == 'INITIAL':
@@ -549,22 +550,12 @@ class PlayerInterface(DogPlayerInterface):
 		message = start_status.get_message()
 
 		self.show_message(title='Mensagem do DOG', message=message)
-		#TODO pegar game config
-		#TODO chamar o update da interface
 
 	def reset_game(self):
 		match_state = self.round_manager.match_state
 		if match_state in [State.ABANDONED, State.FINISHED]:
 			self.round_manager.reset_game()
 			#TODO chamar o update da GUI
-
-	#TODO implementar método change_cards
-	# def change_cards_from_pack():
-		# try:
-		# 	self.RoundManager.change_cards_from_pack()
-		# except:
-		# 	self.__show_message("BAG COM PROBLEMA - NÃO TEM CARDS OU NÃO TEM CARDS SEM EXCEÇÕES")
-		# pass
 
 	def select_card_from_pack(self, event) -> None:
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"

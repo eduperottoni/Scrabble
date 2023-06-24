@@ -12,7 +12,7 @@ from classes.exceptions import FirstWordRulesNotRespectedException , WordNotConn
 
 class Board:
     def __init__(self):
-        self.__bag = Bag(CARDS_QUANTITY_BY_LETTER2)
+        self.__bag = Bag(CARDS_QUANTITY_BY_LETTER)
         self.__dictionary = Dictionary()
         self.__current_word = Word()
         
@@ -108,29 +108,25 @@ class Board:
 
         return total_score
 
+    def verify_card_in_center(self):
+        return self.positions[7,7].is_enabled == False
+    
     def verify_first_word_rules(self):
         # verificar se há um card no centro do tabuleiro
-        card_in_center = False
-        for position in self.__current_word.positions:
-            if position.coordinate == (7, 7):
-                card_in_center = True
-                break
+        card_in_center = self.verify_card_in_center()
 
-        more_then_one_card = True if len(self.__current_word.positions) > 1 else False
+        more_then_one_card = True if len(self.current_word.get_lenght()) else False
 
-        if more_then_one_card and card_in_center:
-            return True
-        else:
-            raise FirstWordRulesNotRespectedException
+        if more_then_one_card and card_in_center: return True
+        else: raise FirstWordRulesNotRespectedException
 
 
     def verify_valid_word(self) -> bool:
         self.verify_number_of_letters()
         self.verify_connected_positions()
         self.determine_adjacent_words()
-        # self.verify_words_existance_and_validity()
-        self.update_search_dict()
-
+        self.verify_words_existance_and_validity()
+        
         return True
 
 
@@ -143,19 +139,15 @@ class Board:
         aux = self.verify_current_word_same_line_or_column()
         direction = aux[1]
         
-        if direction != None:
-            self.current_word.direction = direction
-            max_min_positions = self.current_word.get_min_max_positions()
-            
-            min_position = max_min_positions[0]
-            max_position = max_min_positions[1]
-            
-            fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
-            
-            if not fill: raise WordNotConnectedException
-            else: return True
-        else:
-            raise WordNotConnectedException
+        self.current_word.direction = direction
+        max_min_positions = self.current_word.get_min_max_positions()
+        
+        min_position = max_min_positions[0]
+        max_position = max_min_positions[1]
+        
+        fill = self.verify_positions_filling(min_position.coordinate, max_position.coordinate)
+        
+        if not fill: raise WordNotConnectedException
     
     def determine_adjacent_words(self):
         """
@@ -172,10 +164,8 @@ class Board:
         """
         current_word = copy.deepcopy(self.current_word)
         self.__current_adjacent_words_dict['current'] = current_word
-
-        #TODO: TESTAR SE O POSIÇÃO CORRENTE ESTÁ COM DADOS NO SEARCH_DICT. SE ESTIVER: NO PRECISO DAR APPEND COM ELA. CASO CONTRÁRIO, PRECISO DAR APPEND COM ELA.
-        #TODO: não tem como testar isso agora, só depois que der pra enviar a jogada pro outro jogador
         search_dict = self.__valid_words_search_dict
+
         for position in self.current_word.positions:
             already_in_board = search_dict[position.coordinate]['horizontal'] or search_dict[position.coordinate]['vertical']
             if not already_in_board:
@@ -220,8 +210,7 @@ class Board:
                         elif already_valid_word_right:
                             already_valid_word_right.add_position(position, 0)
                             self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right)
-
-        #TODO PEGAR A PALAVRA DE MESMA DIREÇÃO ANTERIOR E POSTERIOR  
+ 
         max_min_positions = current_word.get_min_max_positions()
         direction = current_word.direction
 
@@ -361,14 +350,11 @@ class Board:
     def verify_positions_filling(self, min_position: tuple, max_position: tuple) -> bool:
         all_coords = self.generate_coords(min_coord=min_position, max_coord=max_position, direction=self.current_word.direction)
         word = Word()
-        for index, coord in enumerate(all_coords):
+        for coord in all_coords:
             position = self.get_position(board_coord=coord)
 
-            if position.is_enabled:
-                return False
-            # elif position not in self.__current_word.positions:
+            if position.is_enabled: return False
             self.__current_adjacent_words_dict['current'] = word.add_position(position)
-            # self.__current_word.add_position(position, index)
 
         return True
 
@@ -416,7 +402,8 @@ class Board:
 
         self.current_word.direction = direction
         self.bag.cards_amount_per_letter = bag['cards_amount_per_letter']
-        self.bag.enabled = True if bag['enabled'] == 'True' else False
+        print(f'NO UPDATE {bag["enabled"]}')
+        self.bag.enabled = True if bag['enabled'] == True else False
         self.dictionary.valid_words = dict_valid_words
         # valida as regras gerais da palavra
         self.determine_adjacent_words()

@@ -25,6 +25,16 @@ class Word:
     def add_position(self, position: Position, index: int = None) -> None:
         if not index: self.__positions.append(position)
         else: self.__positions.insert(index, position)
+    
+    def get_lenght(self) -> int:
+        return len(self.__positions)
+    
+
+    def get_positions_coords(self) -> list[tuple]:
+        coordinates = []
+        for position in self.positions:
+            coordinates.append(position.coordinate)
+            return coordinates
 
     @staticmethod
     def concatenate(*words: 'list[Word]') -> 'Word':
