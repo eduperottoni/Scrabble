@@ -109,13 +109,13 @@ class Board:
         return total_score
 
     def verify_card_in_center(self):
-        return self.positions[7,7].is_enabled == False
+        return self.positions[7][7].is_enabled == False
     
     def verify_first_word_rules(self):
         # verificar se há um card no centro do tabuleiro
         card_in_center = self.verify_card_in_center()
 
-        more_then_one_card = True if len(self.current_word.get_lenght()) else False
+        more_then_one_card = True if self.current_word.get_lenght() else False
 
         if more_then_one_card and card_in_center: return True
         else: raise FirstWordRulesNotRespectedException
@@ -390,6 +390,7 @@ class Board:
 
 
     def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag: 'dict') -> None:
+        
         for index, coord in enumerate(positions):
             letter = string[index]
             card_obj = Card(letter)

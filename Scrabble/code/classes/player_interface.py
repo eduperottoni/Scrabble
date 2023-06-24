@@ -278,10 +278,10 @@ class PlayerInterface(DogPlayerInterface):
 
 
 	def return_cards_to_pack(self, event):
-		try:
-			self.round_manager.return_cards_to_pack()
-		except Exception as e:
-			self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
+		# try:
+		self.round_manager.return_cards_to_pack()
+		# except Exception as e:
+			# self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
 
 
 	def change_cards_from_pack(self, event):

@@ -352,26 +352,25 @@ class RoundManager:
 
     def proceed_cards_returning(self):
         if self.move_type != Move.CHANGE:
-
+            
+            positions = self.board.current_word.positions
             positions_coords = self.board.current_word.get_positions_coords()
 
             self.board.current_word.reset()
 
             empty_pack_indexes = self.local_player.pack.get_empty_indexes()
 
-            cards = [position.card for position in positions_coords]
+            cards = [position.card for position in positions]
 
-            [position.reset() for position in positions_coords]
+            [card.self_unselect() for card in cards]
+            [position.reset() for position in positions]
 
             self.local_player.pack.insert_cards(cards, empty_pack_indexes)
-
-            for card in cards:
-                card.self_unselect()
 
             #: verificação das posições do board (se for uma posição especial é preciso reiniciar como especial)
             aux_dict = {}
             for index, position in enumerate(positions):
-                coordinate = board_coordinates[index]
+                coordinate = positions_coords[index]
                 coord_type = 'NORMAL'
                 if isinstance(position, TWPosition): coord_type = 'TW'
                 elif isinstance(position, DWPosition): coord_type = 'DW'

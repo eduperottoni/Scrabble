@@ -30,11 +30,11 @@ class Word:
         return len(self.__positions)
     
 
-    def get_positions_coords(self) -> list[tuple]:
+    def get_positions_coords(self) -> 'list[tuple]':
         coordinates = []
-        for position in self.positions:
+        for position in self.__positions:
             coordinates.append(position.coordinate)
-            return coordinates
+        return coordinates
 
     @staticmethod
     def concatenate(*words: 'list[Word]') -> 'Word':
