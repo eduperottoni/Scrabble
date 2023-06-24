@@ -38,10 +38,12 @@ class Word:
 
     @staticmethod
     def concatenate(*words: 'list[Word]') -> 'Word':
+        print('22222222222222222222222222222222222222222222')
         concatenated_positions = []
         direction = ''
         for word in words:
             if word != None and word.positions != []:
+                print(word.get_string())
                 concatenated_positions.extend(word.positions)
                 direction = word.direction
 

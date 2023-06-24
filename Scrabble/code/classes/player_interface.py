@@ -35,7 +35,7 @@ class PlayerInterface(DogPlayerInterface):
 		)
 		self.file_menu.add_command(
 			label='Restart game',
-			command= self.restart_game,
+			command= self.reset_game,
 		)
 		self.menu_bar.add_cascade(
 			label="Game options",
@@ -278,10 +278,10 @@ class PlayerInterface(DogPlayerInterface):
 
 
 	def return_cards_to_pack(self, event):
-		# try:
-		self.round_manager.return_cards_to_pack()
-		# except Exception as e:
-			# self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
+		try:
+			self.round_manager.return_cards_to_pack()
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao retornar cards para o pack -> {e}')
 
 
 	def change_cards_from_pack(self, event):
@@ -396,6 +396,7 @@ class PlayerInterface(DogPlayerInterface):
 		self.update_gui_local_pack()
 		self.__update_gui_players_names()
 		self.update_gui_players_score()
+			
 	
 	def update_gui_players_score(self):
 		local_score = self.round_manager.local_player.score
@@ -516,21 +517,21 @@ class PlayerInterface(DogPlayerInterface):
 
 		:param event: event generxated by click in position
 		"""
-		# try:
-		label_name = event.widget.winfo_name()
+		try:
+			label_name = event.widget.winfo_name()
 
-		coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
-		coord_tuple = (int(coord_list[0]), int(coord_list[1]))
+			coord_list = label_name.replace('(', '').replace(')', '').replace('board', '').split(',')
+			coord_tuple = (int(coord_list[0]), int(coord_list[1]))
 
-		self.round_manager.select_board_position(coord_tuple)
+			self.round_manager.select_board_position(coord_tuple)
 
-		# except Exception as e:
-			# self.show_message("ERRO", f'Erro ao selecionar posição do tabuleiro -> {e}')
+		except Exception as e:
+			self.show_message("ERRO", f'Erro ao selecionar posição do tabuleiro -> {e}')
 
 
 	#Receiving game's start from DOG
 	def receive_start(self, start_status: StartStatus) -> None:
-		self.reset_game()
+		#self.reset_game()
 		players_response = start_status.get_players()
 		players = self.__status_response_to_dict(players_response)
 		self.round_manager.configure_players(players)
@@ -561,14 +562,11 @@ class PlayerInterface(DogPlayerInterface):
 		except Exception as e:
 			self.show_message("ERRO", f'Erro ao selecionar letra -> {e}')
 
-	def restart_game(self) -> None:
+	def reset_game(self) -> None:
 		print('CHAMANDO RESTART DA PLAYER INTERFACE')
-		self.round_manager.restart_game()
+		self.round_manager.reset_game()
 		self.__update_gui()
 		self.__draw_board()
-		# self.round_manager.start_game()
 	
-	# def receive_withdrawal_notification(self):
-	# 	self.board.receive_withdrawal_notification()
-	# 	game_state = self.board.get_status()
-	# 	self.update_gui(game_state)
+	def receive_withdrawal_notification(self):
+		self.round_manager.receive_withdrawal_notification()

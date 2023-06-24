@@ -330,6 +330,7 @@ class RoundManager:
             self.local_player.dropouts = 0
             self.remote_player.dropouts = 0
         self.board.current_word.reset()
+        # self.local_player.pack.deselect_all_cards()
         self.board.reset_curr_adj_words_dict()
     
     def return_cards_to_pack(self):
@@ -459,18 +460,22 @@ class RoundManager:
             print(self.local_player.dropouts)
             print(self.remote_player.dropouts)
             if self.local_player.score >= self.remote_player.score:
-                self.player_interface.show_message(title='WINNER', message="Local Player Won!")
+                self.player_interface.show_message(title='Fim de jogo', message="Parabéns! Você ganhou a partida!")
                 self.winner = self.local_player
             elif self.local_player.score < self.remote_player.score:
-                self.player_interface.show_message(title='WINNER', message="Remote Player Won!")
+                self.player_interface.show_message(title='Fim de jogo', message="Que pena! Você perdeu.")
                 self.winner = self.remote_player
             self.__match_state = State.FINISHED
         
 
-    def restart_game(self):
+    def reset_game(self):
         self.match_state = State.NOT_INITIALIZED
         self.remote_player.reset()
         self.local_player.reset()
         self.board.reset()
         self.winner = None
         self.move_type = None
+
+    def receive_withdrawal_notification(self):
+        self.player_interface.show_message(title='Partida encerrada', message="O seu adversário desistiu da partida!")
+        self.reset_game()
