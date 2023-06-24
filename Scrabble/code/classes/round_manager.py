@@ -173,10 +173,6 @@ class RoundManager:
         player.pack.insert_cards(cards, positions)
 
 
-    def update_bag(self, cards_bag):
-        self.board.bag.cards_amount_per_letter = cards_bag
-
-
     def select_card_from_pack(self, index: int):
         """
         Verify turn and move type and pass the control to pack
@@ -237,28 +233,21 @@ class RoundManager:
         else:
             if move_type == Move.CHANGE:
                 cards_bag = move_dict['bag']['cards_amount_per_letter']
-                self.update_bag(cards_bag)
+                self.board.bag.cards_amount_per_letter = cards_bag
                 self.__player_interface.show_message(title='Jogada recebida', message="O outro jogador trocou de letras. É sua vez de jogar!")
 
             elif move_type == Move.GIVE_UP:
-                self.remote_player.dropouts += 1
-
+                self.remote_player.increment_droupouts()
                 self.verify_game_end()
+                self.show_message()
 
-                if self.__match_state != State.FINISHED:
-                    self.__player_interface.show_message(title='Jogada recebida', message="O outro jogador passou a vez. É sua vez de jogar!")
-                else:
-                    self.__player_interface.show_message(title='PARTIDA FINALIZADA', message="O JOGO ACABOU")
-                
             elif move_type == Move.CONSTRUCTION:
                 string = move_dict['valid_word']['string']
                 positions = move_dict['valid_word']['positions']
-                direction = move_dict['valid_word']['direction']
-                bag = move_dict['bag']
-                dict_valid_words = move_dict['dict_valid_words']['valid_words']
+                move_dict['dict_valid_words']['valid_words']
                 remote_player_score = move_dict['player_score']['score']
 
-                self.board.update(string, positions, direction, dict_valid_words, bag)
+                self.board.update(move_type)
 
                 for index, coord in enumerate(positions):
                     self.player_interface.update_gui_board_positions({(coord[0], coord[1]): string[index]})
@@ -268,14 +257,17 @@ class RoundManager:
 
                 self.reset_move()
                 self.verify_game_end()
-
-                if self.__match_state != State.FINISHED:
-                    self.__player_interface.show_message(title='Jogada recebida', message="Sua vez de jogar!")
-                else:
-                    self.__player_interface.show_message(title='PARTIDA FINALIZADA', message="O JOGO ACABOU")
-            
+                self.show_message()
+    
             self.local_player.toogle_turn()
             self.remote_player.toogle_turn()
+
+    def show_message(self):        
+        if self.__match_state != State.FINISHED:
+            self.__player_interface.show_message(title='Jogada recebida', message="Sua vez de jogar!")
+        else:
+            self.__player_interface.show_message(title='PARTIDA FINALIZADA', message="O JOGO ACABOU")
+            
 
     def submit_word(self):
         if self.move_type == Move.CONSTRUCTION:

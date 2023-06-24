@@ -344,11 +344,8 @@ class PlayerInterface(DogPlayerInterface):
 		return label_score
 	
 	def start_game(self) -> None:
-		print('CHAMANDO start game')
 		# Se o estado do jogo estiver em NOT_INITIALIZED
-		print(self.round_manager.match_state)
 		if (self.round_manager.match_state == State.NOT_INITIALIZED):
-			print('ESTADO É RUIM')
 			answer = self.__askquestion(messages.START_MATCH_TITLE, messages.START_MACTH_QUESTION)
 			if answer:
 				start_status = self.__dog_server_interface.start_match(2)

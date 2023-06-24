@@ -389,7 +389,12 @@ class Board:
                 self.__valid_words_search_dict[(i, j)] = {'horizontal': None, 'vertical': None}
 
 
-    def update(self, string: str, positions: 'list[tuple[int]]', direction: str, dict_valid_words: 'dict[str]', bag: 'dict') -> None:
+    def update(self, move_dict) -> None:
+        string = move_dict['valid_word']['string']
+        positions = move_dict['valid_word']['positions']
+        direction = move_dict['valid_word']['direction']
+        bag = move_dict['bag']
+        dict_valid_words = move_dict['dict_valid_words']['valid_words']
         for index, coord in enumerate(positions):
             letter = string[index]
             card_obj = Card(letter)
