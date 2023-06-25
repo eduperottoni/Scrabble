@@ -361,21 +361,9 @@ class RoundManager:
 
             self.local_player.pack.insert_cards(cards, empty_pack_indexes)
 
-            #: verificação das posições do board (se for uma posição especial é preciso reiniciar como especial)
-            aux_dict = {}
-            for index, position in enumerate(positions):
-                coordinate = positions_coords[index]
-                coord_type = 'NORMAL'
-                if isinstance(position, TWPosition): coord_type = 'TW'
-                elif isinstance(position, DWPosition): coord_type = 'DW'
-                elif isinstance(position, DLPosition): coord_type = 'DL'
-                elif isinstance(position, TLPosition): coord_type = 'TL'
-                elif coordinate == (7,7): coord_type = '*'
-                else: coord_type = 'NORMAL'
-                aux_dict[coordinate] = coord_type
+            # verificação das posições do board (se for uma posição especial é preciso reiniciar como especial)
+            self.reset_board_positions()
 
-            self.player_interface.update_gui_board_positions(aux_dict)
-            
             aux_dict = {}
             for index, empty_index in enumerate(empty_pack_indexes):
                 aux_dict[empty_index] = cards[index].letter
@@ -383,7 +371,23 @@ class RoundManager:
             
         else:
             self.player_interface.show_message(title='Jogada inválida', message="Não é permitido retornar os cards em uma jogada de troca de cards!")
-        
+
+    def reset_board_positions(self):
+        aux_dict = {}
+        for index, position in enumerate(positions):
+            coordinate = positions_coords[index]
+            coord_type = 'NORMAL'
+            if isinstance(position, TWPosition): coord_type = 'TW'
+            elif isinstance(position, DWPosition): coord_type = 'DW'
+            elif isinstance(position, DLPosition): coord_type = 'DL'
+            elif isinstance(position, TLPosition): coord_type = 'TL'
+            elif coordinate == (7,7): coord_type = '*'
+            else: coord_type = 'NORMAL'
+            aux_dict[coordinate] = coord_type
+
+        self.player_interface.update_gui_board_positions(aux_dict)
+    
+
     def change_cards_from_pack(self):
         """
         Change cards main methos (called in the execution of the use case)
