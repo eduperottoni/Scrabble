@@ -442,7 +442,10 @@ class PlayerInterface(DogPlayerInterface):
 				self.mark_off_card(index)
 		else:
 			for index, card in enumerate(self.round_manager.local_player.pack.cards):
-				new_image = self.__images['CARDS'][f'{card.letter}']
+				if card:
+					new_image = self.__images['CARDS'][f'{card.letter}']
+				else:
+					new_image = self.__images['CARDS']['NORMAL']
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
 				self.local_pack_cards[index].id = f'local({index}, {card.letter})'
@@ -548,11 +551,7 @@ class PlayerInterface(DogPlayerInterface):
 
 		self.show_message(title='Mensagem do DOG', message=message)
 
-	def reset_game(self):
-		match_state = self.round_manager.match_state
-		if match_state in [State.ABANDONED, State.FINISHED]:
-			self.round_manager.reset_game()
-			#TODO chamar o update da GUI
+
 
 	def select_card_from_pack(self, event) -> None:
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"
