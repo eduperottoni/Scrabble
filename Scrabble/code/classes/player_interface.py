@@ -32,7 +32,7 @@ class PlayerInterface(DogPlayerInterface):
 			command=self.window.destroy,
 		)
 		self.file_menu.add_command(
-			label='Restart game',
+			label='Reset game',
 			command= self.reset_game,
 		)
 		self.menu_bar.add_cascade(

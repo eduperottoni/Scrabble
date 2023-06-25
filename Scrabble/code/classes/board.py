@@ -1,10 +1,9 @@
 import copy
-import json
 from classes.bag import Bag
 from classes.word import Word
 from classes.card import Card
 from classes.dictionary import Dictionary
-from constants.cards import CARDS_QUANTITY_BY_LETTER, CARDS_QUANTITY_BY_LETTER2
+from constants.cards import CARDS_QUANTITY_BY_LETTER
 from constants.measures import BOARD_SIDE
 from constants.positions import TW, DW, DL, TL
 from classes.position import NormalPosition, DWPosition, DLPosition, TWPosition, TLPosition
@@ -368,12 +367,9 @@ class Board:
 
             if position.is_enabled: return False
             word.add_position(position)
-    
         word.direction = self.current_word.direction
         self.__current_adjacent_words_dict['current'] = word
 
-        print(self.__current_adjacent_words_dict['current'])
-        print(word.get_string())
         return True
 
 

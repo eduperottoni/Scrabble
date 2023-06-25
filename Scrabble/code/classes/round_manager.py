@@ -1,9 +1,6 @@
 from classes.enums import State, Move
 from classes.player import Player
 from classes.board import Board
-from classes.card import Card
-from constants import messages
-from constants.positions import TW, DW, DL, TL
 from classes.position import TWPosition, DLPosition, DWPosition, TLPosition
 from classes.exceptions import NotYourTurnException, MatchFinishedException, PositionAlreadyHasCardException, InvalidOperation, CardNotSelectedException
 
