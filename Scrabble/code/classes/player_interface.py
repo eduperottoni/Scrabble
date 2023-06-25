@@ -442,13 +442,16 @@ class PlayerInterface(DogPlayerInterface):
 				self.mark_off_card(index)
 		else:
 			for index, card in enumerate(self.round_manager.local_player.pack.cards):
+				letter = ''
 				if card:
+					letter = f'{card.letter}'
 					new_image = self.__images['CARDS'][f'{card.letter}']
 				else:
-					new_image = self.__images['CARDS']['NORMAL']
+					letter = 'NORMAL'
+					new_image = self.__images['POSITIONS']['NORMAL']
 				self.local_pack_cards[index].configure(image=new_image)
 				self.local_pack_cards[index].image = new_image
-				self.local_pack_cards[index].id = f'local({index}, {card.letter})'
+				self.local_pack_cards[index].id = f'local({index}, {letter})'
 	
 	# def exchange_cards(self, board_coordinates: 'list(tuple)', pack_indexes: 'list(int)') -> None:
 
@@ -551,8 +554,6 @@ class PlayerInterface(DogPlayerInterface):
 
 		self.show_message(title='Mensagem do DOG', message=message)
 
-
-
 	def select_card_from_pack(self, event) -> None:
 		pack_index = f"{str(event.widget.id).replace('local(', '')[0]}"
 		try:
@@ -561,10 +562,10 @@ class PlayerInterface(DogPlayerInterface):
 			self.show_message("ERRO", f'Erro ao selecionar letra -> {e}')
 
 	def reset_game(self) -> None:
-		print('CHAMANDO RESTART DA PLAYER INTERFACE')
 		self.round_manager.reset_game()
 		self.__update_gui()
-		self.__draw_board()
+		self.__draw_board(self.board_size/self.board_side, self.board_side)
+		self.show_message("RESET GAME", f'O jogo foi resetado! Para jogar um novo jogo, clique em START GAME')
 	
 	def receive_withdrawal_notification(self):
 		self.round_manager.receive_withdrawal_notification()
