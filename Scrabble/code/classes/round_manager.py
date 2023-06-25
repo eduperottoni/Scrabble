@@ -362,7 +362,7 @@ class RoundManager:
             self.local_player.pack.insert_cards(cards, empty_pack_indexes)
 
             # verificação das posições do board (se for uma posição especial é preciso reiniciar como especial)
-            self.reset_board_positions()
+            self.reset_board_positions(positions, positions_coords)
 
             aux_dict = {}
             for index, empty_index in enumerate(empty_pack_indexes):
@@ -372,7 +372,7 @@ class RoundManager:
         else:
             self.player_interface.show_message(title='Jogada inválida', message="Não é permitido retornar os cards em uma jogada de troca de cards!")
 
-    def reset_board_positions(self):
+    def reset_board_positions(self, positions, positions_coords):
         aux_dict = {}
         for index, position in enumerate(positions):
             coordinate = positions_coords[index]

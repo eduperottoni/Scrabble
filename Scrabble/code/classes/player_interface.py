@@ -4,10 +4,8 @@ from dog.start_status import StartStatus
 import tkinter as tk
 from tkinter import Frame, Label, messagebox, Button, Menu, Canvas, simpledialog, PhotoImage
 from PIL import Image, ImageTk
-import copy
 from constants.positions import POSITIONS_RGB
 from constants.cards import CARDS_VALUES_BY_LETTER
-from constants.positions import TW, DW, DL, TL
 
 from classes.round_manager import RoundManager
 from classes.enums import State, Move
@@ -76,6 +74,7 @@ class PlayerInterface(DogPlayerInterface):
 		self.__load_images()
 		self.__render_gui()
 		self.window.mainloop()
+
 	@property
 	def dog_server_interface(self):
 		return self.__dog_server_interface

@@ -92,11 +92,3 @@ class Pack:
         _json = json.loads(json_string)
 
         return _json
-    
-
-    # Just to make tests
-    # def __str__(self):
-    #     string = ''
-    #     for card in self.__cards:
-    #         string += f'{card.letter} -> {card.value}\n'
-    #     return string

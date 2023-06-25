@@ -162,7 +162,6 @@ class Board:
         (0,1) : {'horizontal': <WORD_IN_0,1_HORIZONTAL>,
                     'vertical': <WORD_IN_0,1_VERTICAL>}}
         """
-        print('0000000000000000000000000000000000000000000000000')
         current_word = copy.deepcopy(self.__current_adjacent_words_dict['current'])
         current_word = current_word if current_word else self.current_word
         search_dict = self.__valid_words_search_dict
@@ -173,7 +172,6 @@ class Board:
             already_in_board = search_dict[position.coordinate]['horizontal'] or search_dict[position.coordinate]['vertical']
             if not already_in_board:
                 if current_word.direction == 'horizontal':
-                    print('3333333333333333333333333333333333333333333333333')
                     # Coordenada abaixo
                     coord_below = (position.coordinate[0] + 1, position.coordinate[1])
                     # Coordenada acima
@@ -195,7 +193,6 @@ class Board:
                             self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_above)   
                 
                 elif current_word.direction == 'vertical':
-                    print('444444444444444444444444444444444444')
                     # Coordenada esquerda
                     coord_left = (position.coordinate[0], position.coordinate[1] - 1)
                     # Coordenada direita
@@ -204,7 +201,6 @@ class Board:
                     print(coord_left, coord_right)
 
                     if coord_left[1] >= 0 and coord_right[1] <= 14:
-                        print('5555555555555555555555555555555555555555555555')
                         print(self.__valid_words_search_dict[coord_left]['horizontal'])
                         print(self.__valid_words_search_dict[coord_right]['horizontal'])
 
@@ -212,16 +208,13 @@ class Board:
                         already_valid_word_right = copy.deepcopy(self.__valid_words_search_dict[coord_right]['horizontal']) if self.__valid_words_search_dict[coord_right]['horizontal'] != None else None
 
                         if already_valid_word_left and already_valid_word_right:
-                            print('6666666666666666666666666666666666666666666666')
                             already_valid_word_left.add_position(position)
                             [already_valid_word_left.add_position(position) for position in already_valid_word_right.positions]
                             self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
                         elif already_valid_word_left:
-                            print('77777777777777777777777777777777777777777777777777')
                             already_valid_word_left.add_position(position)
                             self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_left)   
                         elif already_valid_word_right:
-                            print('88888888888888888888888888888888888888888888888888888')
                             already_valid_word_right.add_position(position, 0)
                             self.__current_adjacent_words_dict['adjacents'].append(already_valid_word_right)
  
@@ -254,10 +247,8 @@ class Board:
         print(self.__valid_words_search_dict[inf_coord][direction])
         print(self.__valid_words_search_dict[sup_coord][direction])
 
-        print("1111111111111111111111111111111111111111")
         print(new_current.get_string())
         print(self.__current_adjacent_words_dict['adjacents'])
-        print("1111111111111111111111111111111111111111")
 
     def update_search_dict(self):
         """
@@ -381,7 +372,6 @@ class Board:
         word.direction = self.current_word.direction
         self.__current_adjacent_words_dict['current'] = word
 
-        print('999999999999999999999999')
         print(self.__current_adjacent_words_dict['current'])
         print(word.get_string())
         return True
